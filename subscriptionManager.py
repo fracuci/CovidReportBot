@@ -8,8 +8,6 @@ bot_token = botTools.bot_token
 bot_message_welcome = botTools.bot_message_welcome
 bot_message_goodbye = botTools.bot_message_goodbye
 
-offset = dbManager.get_last_offset(db_connection)
-URL_Updates = 'https://api.telegram.org/bot'+bot_token+'/getUpdates?offset='+str(offset)
 data = None
 
 
@@ -72,6 +70,8 @@ def process_request(data):
 
 
 def process_subscription_request(URL_Update=None):
+    offset = dbManager.get_last_offset(db_connection)
+    URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates?offset=' + str(offset)
 
     prev_status = dbManager.get_request_issue_state(db_connection)
 

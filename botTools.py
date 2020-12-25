@@ -2,11 +2,14 @@ import secrets
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import io
+import datetime
 
 bot_token = secrets.bot_token
 ############ subscriptionManager elements ###############
-bot_message_welcome = 'Welcome'
-bot_message_goodbye = 'Goodbye'
+bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno sull'andamento nazionale dei dati sul Covid 19. Se non vuoi più ricevere notifiche digita */stop*.
+                         *ATTENZIONE* per motivi logistici non è assicurato il servizio il _sabato_ e la _domenica_"""
+
+bot_message_goodbye = """Sei stato eliminato dalla lista degli utenti. Non riceverai più notifiche sull'andamento nazionale dei dati sul Covid 19. Arrivederci!"""
 
 ############# reportManager elements ###################
 
@@ -41,3 +44,10 @@ def render_image(data):
     buf.seek(0)
     #img = Image.open(buf, mode='r')
     return buf
+
+def get_time():
+    # restituisce ore e minuti
+    hh = datetime.datetime.now().hour
+    mm = datetime.datetime.now().minute
+
+    return (hh,mm)

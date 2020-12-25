@@ -1,28 +1,24 @@
-# import schedule
-# import requests
-# import time
+import time
 import subscriptionManager
 import dataManager
+import reportManager
+import botTools
 
-# schedule.every().day.at("22:47").do(report)
 
+while True:
 
-def main():
-
-    print("Controllo nuovi utenti e utenti che si de-registrano")
+    print("Controllo utenti..")
     subscriptionManager.process_subscription_request()
+    time.sleep(3)
 
-    print("Ho finito di controllare gli utenti.. se sono le 18 passo ai dati")
+    hh, mm = botTools.get_time()
+    if (hh == 19 and mm == 45):
+        print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
+        dataManager.collect_data()
 
-    print("Inizio a controllare i nuovi dati")
-
-    print("Ho finito di controllare i nuovi dati")
-
-
-if __name__ == "__main__":
-    main()
-
-
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+    hh, mm = botTools.get_time()
+    if (hh == 20 and mm == 5):
+        print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo e aggiorno i dati sul database")
+        data_rep = reportManager.daily_national_data_report()
+        txt_rep = botTools.format_message(data_rep)
+        reportManager.report_users_text(txt_rep)

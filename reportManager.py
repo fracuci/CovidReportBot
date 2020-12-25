@@ -22,7 +22,7 @@ regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friuliv
 
 
 def daily_national_data_report():
-    # restituisce un messaggio di testo formattato con i dati di ieri e oggi
+    # restituisce  i dati di ieri e oggi
     report_data = {'today': date.strftime("Oggi: %d-%m-%Y")}
     today = int(date.strftime("%Y%m%d"))
     yesterday = today-1
