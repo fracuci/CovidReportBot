@@ -3,6 +3,15 @@ import datetime
 import botTools
 import requests
 
+############################################# FUNZIONAMENTO ###########################################################
+# Per il messaggio di testo giornaliero deve esser prima chiamata la funz. daily_national_data_report per poi passare #
+# i dati generati al botTools.format_message che formatta i dati in un messaggio di testo                             #
+# Per il reporto settimanale e mensile (solo grafico) va prima chiamata la weekly_national_data_report o la           #
+# monthly_national_data_report che scarica i dati. I dati devono essere poi passati al botTools.render_image          #
+# che crea l'immagine come byte-array.                                                                                #
+# Il messaggio di testo formattato va infine passato al report_users_text che manda il messaggio di testo mentre      #
+# l'immmagine deve essere passata al report_users_images                                                              #
+#######################################################################################################################
 
 db_connection = dbManager.mongodb_connection().covid19DB
 date = datetime.date.today()
@@ -51,18 +60,19 @@ def daily_national_data_report():
 
     report_data['perc_positivita_oggi'] = round(100*(report_data['nuovi_positivi_oggi']/report_data['tamponi_oggi']), 3)
 
-    text_message = botTools.format_message(report_data)
+    # text_message = botTools.format_message(report_data)
+    #
+    # return text_message
 
-    return text_message
+    return report_data
 
-def WM_national_data_report():
-    #restituisce i dati da plottare
-    today = 20201223#int(date.strftime("%Y%m%d"))
-    l_week = int(date.strftime("%Y%m%d")) - 1 # ultima settimana
-    l_month = int(date.strftime("%Y%m%d")) - 1 # ultimo mese
 
-    lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week}, 'date': {'$lte':today}})
-    lmonth_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_month}, 'date': {'$lte':today}})
+def weekly_national_data_report():
+    # restituisce i dati dell'ultima settimana da plottare
+    today = int(date.strftime("%Y%m%d"))
+    l_week = int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+
+    lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week}, 'date': {'$lte': today}})
     db_connection.close
 
     week_dates = [] #date dell'ultima settimana
@@ -80,16 +90,44 @@ def WM_national_data_report():
         week_np.append((el['nuovi_positivi']))
         week_d.append(el['deceduti'])
 
-    data = {'week_dates':week_dates, 'week_rc_sint':week_rc_sint,'week_ti':week_ti,
-    'week_np':week_np, 'week_d':week_d}
+    week_data = {'dates':week_dates, 'rc_sint':week_rc_sint,'ti':week_ti,
+    'np':week_np, 'd':week_d}
 
-    print(data)
+    return week_data
 
-    return data
+def monthly_national_data_report():
+    #restituisce i dati dell'ultimo  mese da plottare
+    today = int(date.strftime("%Y%m%d"))
+
+    l_month = int(date.strftime("%Y%m%d")) - 30 # ultimo mese
+
+    lmonth_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_month}, 'date': {'$lte':today}})
+    db_connection.close
+
+    month_dates = []  # date dell'ultimo mese
+    month_rc_sint = []  # ricoverati con sintomi ultimo mese
+    month_ti = []  # terapia intensiva ultimo mese
+    month_np = []  # nuovi positivi ultimo mese
+    month_d = []  # deceduti  ultimo mese
+
+    for el in lmonth_query:
+
+        d = datetime.datetime.strptime(str(el['date']),"%Y%m%d")
+        month_dates.append(d)
+        month_rc_sint.append((el['ricoverati_con_sintomi']))
+        month_ti.append((el['terapia_intensiva']))
+        month_np.append((el['nuovi_positivi']))
+        month_d.append(el['deceduti'])
+
+
+    month_data = {'dates':month_dates, 'rc_sint':month_rc_sint,'ti':month_ti,
+    'np':month_np, 'd':month_d}
+
+    return month_data
 
 
 
-def report_users(text_message, image_message):
+def report_users_text(text_message):
     users = dbManager.get_all_users(db_connection)
     for u in users:
         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
@@ -97,22 +135,19 @@ def report_users(text_message, image_message):
                                        '&parse_mode=Markdown&text=' + text_message
         requests.get(URL_text_Messages)
 
-        # encoder = MultipartEncoder({'photo=': image_message})
+    return '200 OK'
 
-        # r = requests.post('https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
-        #                     + str(u['id']) #+ \
-        #                 #'&photo='
-        #                 , data=encoder, headers={'Content-Type': encoder.content_type})
-        # print(r.text)
-        # print(encoder.content_type)
-
+def report_users_images(img_message):
+    users = dbManager.get_all_users(db_connection)
+    for u in users:
         URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
-                            + str(u['id'])# + \
-                        #'&photo=' # + str(image_message)
-        r = requests.post(URL_img_Messages, files={'photo':image_message}, data={'document':'photo'})
-        print(r.text)
+                           + str(u['id'])
+        requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
 
+    return '200 OK'
 
+####################### DA VEDERE SE IN FUTURO SI POTRÀ SCRIVERE QUELLA PER LE REGIONI (SPERIAMO FINISCA #####
+###################### TUTTO PRIMA :( ########################################################################
 # def daily_regional_status():
 #
 #     for r in regioni:
@@ -121,7 +156,5 @@ def report_users(text_message, image_message):
 ###### non di tutte e 20 le regioni (21 perché trentino alto adige è patrenot+pabolzano)
 
 
-txt = daily_national_data_report()
-img = render_image(WM_national_data_report())
-
-report_users(txt,img)
+#txt = daily_national_data_report()
+#img = render_image(WM_national_data_report())
