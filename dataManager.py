@@ -104,3 +104,37 @@ def collect_data():
     fill_regional_data(data_regioni)
 
     db_connection.close
+
+###############à Utilizzare uta tantum per fillare il dataset (alcuni giorni delle regioni #################
+#danno errori (saltato 29/10/2020 ############################################################################
+def refill_dataset():
+    # scrivere funzione per refill unatantum del dataset
+
+    d1 = datetime.date(2020,10,30)  #aggiusta con start-end date
+    d2 = datetime.date(2020,12,24)
+
+    dd = [d1+ datetime.timedelta(days=x) for x in range((d2-d1).days + 1)]
+
+    for d in dd:
+        temp_date = d.strftime("%Y%m%d")
+        print('DAY: '+ temp_date)
+        URL_italia = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/' \
+                     'dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale-' + temp_date + '.csv'
+
+        URL_regioni = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/' \
+                      'dati-regioni/dpc-covid19-ita-regioni-' + temp_date + '.csv'
+
+        # chiedo il dato nazionale
+        r_italia = requests.get(url=URL_italia)
+        # processo e salvo il dato nazionale
+        data_italia = str_to_list_national(r_italia.text)
+        fill_national_data(data_italia, temp_date)
+
+        # chiedo il dato regione per regione
+        r_regioni = requests.get(url=URL_regioni)
+        # processo e salvo il dato regione per regione
+        data_regioni = str_to_list_region(r_regioni.text)
+        fill_regional_data(data_regioni, temp_date)
+
+    db_connection.close
+

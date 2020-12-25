@@ -10,14 +10,12 @@ import dataManager
 def main():
 
     print("Controllo nuovi utenti e utenti che si de-registrano")
-    subscriptionManager.process_subscription_request() #bisogna scrivere lo scheduler che ogni x tempo controlla i nuovi iscritti
-    #bisogna scrivere lo scheduler che, se sono le 18.30 fa il bollettino
-    # e lo invia a tutti gli iscritti
+    subscriptionManager.process_subscription_request()
 
     print("Ho finito di controllare gli utenti.. se sono le 18 passo ai dati")
 
     print("Inizio a controllare i nuovi dati")
-    #dataManager.collect_data()
+
     print("Ho finito di controllare i nuovi dati")
 
 

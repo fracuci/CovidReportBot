@@ -103,7 +103,7 @@ def str_to_list_region(data):
 # r = requests.get(url=URL_regioni)
 #
 # d = str_to_list_region(r.text)
-#
+########################à DROP DELLE COLLECTION REGIONI USARE CON PRUDENZA!!! :) #######################
 # db_connection = dbManager.mongodb_connection().covid19DB
 #
 # for i in range(0, len(regioni)):
@@ -114,6 +114,8 @@ def str_to_list_region(data):
 #         continue
 #
 # db_connection.close
+
+################################################################################################
 
 # client = dbManager.mongodb_connection()
 #
@@ -131,7 +133,7 @@ def str_to_list_region(data):
 # print(res)
 # client.close
 
-today = datetime.date.today()
-
-l_week = [int(today.strftime("%Y%m%d")) - x for x in range(1,8)]
-print(l_week)
+# today = datetime.date.today()
+#
+# l_week = [int(today.strftime("%Y%m%d")) - x for x in range(1,8)]
+# print(l_week)

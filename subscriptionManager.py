@@ -19,29 +19,6 @@ def cache_update_request(request_data): #cache request in db if something went w
     return up
 
 
-def process_subscription_request(URL_Update=None):
-
-    prev_status = dbManager.get_request_issue_state(db_connection)
-
-    if prev_status == 1:
-        data_bak = dbManager.get_cached_request(db_connection)
-        process_request(data_bak)
-
-        update_request = requests.get(url=URL_Updates)
-        data_curr = update_request.json()
-        cache_update_request(data_curr)
-
-        db_connection.close
-
-    else:
-        update_request = requests.get(url=URL_Updates)
-        data_curr = update_request.json()
-        cache_update_request(data)
-        process_request(data_curr)
-
-        db_connection.close
-
-
 def process_request(data):
 
     if len(data['result']) > 0:
@@ -92,3 +69,26 @@ def process_request(data):
                             return 'Error:  '+str(e)
                 else: #user has issued a different message
                     continue
+
+
+def process_subscription_request(URL_Update=None):
+
+    prev_status = dbManager.get_request_issue_state(db_connection)
+
+    if prev_status == 1:
+        data_bak = dbManager.get_cached_request(db_connection)
+        process_request(data_bak)
+
+        update_request = requests.get(url=URL_Updates)
+        data_curr = update_request.json()
+        cache_update_request(data_curr)
+
+        db_connection.close
+
+    else:
+        update_request = requests.get(url=URL_Updates)
+        data_curr = update_request.json()
+        cache_update_request(data)
+        process_request(data_curr)
+
+        db_connection.close
