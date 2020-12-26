@@ -1,6 +1,7 @@
 import requests
 import dbManager
 import botTools
+import reportManager
 
 db_connection = dbManager.mongodb_connection().covid19DB
 
@@ -17,7 +18,7 @@ def cache_update_request(request_data): #cache request in db if something went w
     return up
 
 
-def process_request(data):
+def process_request(data, txt_m):
 
     if len(data['result']) > 0:
 
@@ -40,10 +41,12 @@ def process_request(data):
                         URL_Messages = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' \
                                        + str(from_id) + \
                                        '&parse_mode=Markdown&text=' + bot_message_welcome
-
                         response = requests.get(URL_Messages)
+                        reportManager.report_user_text(from_id, txt_m)
+
                         try:# actually.. with Telegram Server when response code is NOT 200..????
                             response.raise_for_status()
+
                         except requests.exceptions.HTTPError as e:
                             dbManager.update_request_issue_state(db_connection, 1)
                             return 'Error:  ' + str(e)
@@ -69,7 +72,7 @@ def process_request(data):
                     continue
 
 
-def process_subscription_request(URL_Update=None):
+def process_subscription_request(text_m):
     offset = dbManager.get_last_offset(db_connection)
     URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates?offset=' + str(offset)
 
@@ -77,7 +80,7 @@ def process_subscription_request(URL_Update=None):
 
     if prev_status == 1:
         data_bak = dbManager.get_cached_request(db_connection)
-        process_request(data_bak)
+        process_request(data_bak, text_m)
 
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
@@ -89,6 +92,6 @@ def process_subscription_request(URL_Update=None):
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
         cache_update_request(data)
-        process_request(data_curr)
+        process_request(data_curr, text_m)
 
         db_connection.close

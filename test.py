@@ -2,6 +2,7 @@ import requests
 import dbManager
 import csv
 import datetime
+import botTools
 
 regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
            'lazio','liguria','lombardia','marche','molise','pabolzano','patrento',
@@ -104,7 +105,7 @@ def str_to_list_region(data):
 #
 # d = str_to_list_region(r.text)
 ########################à DROP DELLE COLLECTION REGIONI USARE CON PRUDENZA!!! :) #######################
-# db_connection = dbManager.mongodb_connection().covid19DB
+#db_connection = dbManager.mongodb_connection().covid19DB
 #
 # for i in range(0, len(regioni)):
 #
@@ -117,23 +118,11 @@ def str_to_list_region(data):
 
 ################################################################################################
 
-# client = dbManager.mongodb_connection()
-#
-# db = client.covid19DB
-#
-# date = int(datetime.date.today().strftime("%Y%m%d"))
-#
-# res = db.andamento_nazionale.find_one({'date':{'$eq': date}})
-#
-# # date = datetime.date.today().strftime("%Y%m%d")
-#
-# for el in res:
-#     print(el)
-#
-# print(res)
-# client.close
 
-# today = datetime.date.today()
+
+# d = weekly_national_data_report()
+# img = botTools.render_image(d)
 #
-# l_week = [int(today.strftime("%Y%m%d")) - x for x in range(1,8)]
-# print(l_week)
+# report_users_images(img)
+
+print(datetime.datetime.today().weekday())

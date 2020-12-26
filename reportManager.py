@@ -30,7 +30,7 @@ def daily_national_data_report():
     today_query = db_connection.andamento_nazionale.find_one({'date': {'$eq': today}})
     yesterday_query = db_connection.andamento_nazionale.find_one({'date': {'$eq': yesterday}})
 
-    db_connection.close
+
 
     report_data['ric_sint_oggi'] = int(today_query['ricoverati_con_sintomi'])
     report_data['ric_sint_ieri'] = int(yesterday_query['ricoverati_con_sintomi'])
@@ -63,6 +63,8 @@ def daily_national_data_report():
     # text_message = botTools.format_message(report_data)
     #
     # return text_message
+    db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'data': report_data}})
+    db_connection.close
 
     return report_data
 
@@ -70,9 +72,10 @@ def daily_national_data_report():
 def weekly_national_data_report():
     # restituisce i dati dell'ultima settimana da plottare
     today = int(date.strftime("%Y%m%d"))
-    l_week = int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+    l_week = today - 7 #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
 
-    lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week}, 'date': {'$lte': today}})
+    lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week,'$lte': today}})
+
     db_connection.close
 
     week_dates = [] #date dell'ultima settimana
@@ -85,49 +88,50 @@ def weekly_national_data_report():
 
         d = datetime.datetime.strptime(str(el['date']),"%Y%m%d")
         week_dates.append(d)
-        week_rc_sint.append((el['ricoverati_con_sintomi']))
-        week_ti.append((el['terapia_intensiva']))
-        week_np.append((el['nuovi_positivi']))
-        week_d.append(el['deceduti'])
+        week_rc_sint.append(int((el['ricoverati_con_sintomi'])))
+        week_ti.append(int((el['terapia_intensiva'])))
+        week_np.append(int((el['nuovi_positivi'])))
+        week_d.append(int(el['deceduti']))
 
     week_data = {'dates':week_dates, 'rc_sint':week_rc_sint,'ti':week_ti,
     'np':week_np, 'd':week_d}
 
+    print(week_data['dates'])
+    print(week_data['rc_sint'])
+
     return week_data
 
-def monthly_national_data_report():
-    #restituisce i dati dell'ultimo  mese da plottare
-    today = int(date.strftime("%Y%m%d"))
+# def monthly_national_data_report():  ####TO BE ENABLED
+#     #restituisce i dati dell'ultimo  mese da plottare
+#     today = int(date.strftime("%Y%m%d"))
+#
+#     l_month = int(date.strftime("%Y%m%d")) - 30 # ultimo mese
+#
+#     lmonth_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_month}, 'date': {'$lte':today}})
+#     db_connection.close
+#
+#     month_dates = []  # date dell'ultimo mese
+#     month_rc_sint = []  # ricoverati con sintomi ultimo mese
+#     month_ti = []  # terapia intensiva ultimo mese
+#     month_np = []  # nuovi positivi ultimo mese
+#     month_d = []  # deceduti  ultimo mese
+#
+#     for el in lmonth_query:
+#
+#         d = datetime.datetime.strptime(str(el['date']),"%Y%m%d")
+#         month_dates.append(d)
+#         month_rc_sint.append((el['ricoverati_con_sintomi']))
+#         month_ti.append((el['terapia_intensiva']))
+#         month_np.append((el['nuovi_positivi']))
+#         month_d.append(el['deceduti'])
+#
+#
+#     month_data = {'dates':month_dates, 'rc_sint':month_rc_sint,'ti':month_ti,
+#     'np':month_np, 'd':month_d}
+#
+#     return month_data
 
-    l_month = int(date.strftime("%Y%m%d")) - 30 # ultimo mese
-
-    lmonth_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_month}, 'date': {'$lte':today}})
-    db_connection.close
-
-    month_dates = []  # date dell'ultimo mese
-    month_rc_sint = []  # ricoverati con sintomi ultimo mese
-    month_ti = []  # terapia intensiva ultimo mese
-    month_np = []  # nuovi positivi ultimo mese
-    month_d = []  # deceduti  ultimo mese
-
-    for el in lmonth_query:
-
-        d = datetime.datetime.strptime(str(el['date']),"%Y%m%d")
-        month_dates.append(d)
-        month_rc_sint.append((el['ricoverati_con_sintomi']))
-        month_ti.append((el['terapia_intensiva']))
-        month_np.append((el['nuovi_positivi']))
-        month_d.append(el['deceduti'])
-
-
-    month_data = {'dates':month_dates, 'rc_sint':month_rc_sint,'ti':month_ti,
-    'np':month_np, 'd':month_d}
-
-    return month_data
-
-
-
-def report_users_text(text_message):
+def report_all_users_text(text_message):
     users = dbManager.get_all_users(db_connection)
     for u in users:
         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
@@ -137,9 +141,24 @@ def report_users_text(text_message):
 
     return '200 OK'
 
+def report_user_text(from_id, text_message):
+
+    URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+                            + str(from_id) + \
+                                       '&parse_mode=Markdown&text=' + text_message
+    requests.get(URL_text_Messages)
+
+    return '200 OK'
+
 def report_users_images(img_message):
     users = dbManager.get_all_users(db_connection)
     for u in users:
+        #avviso prima che sto mandando l'immagine del report settimanale
+        URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+                            + str(u['id']) + \
+                            '&parse_mode=Markdown&text='+'Report settimanale monitoraggio Covid19'
+        requests.get(URL_text_Messages)
+
         URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
                            + str(u['id'])
         requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})

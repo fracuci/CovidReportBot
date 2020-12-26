@@ -72,9 +72,9 @@ def update_request_issue_state(db_client_conn, state):
 
 ################################### Manage Report Data ###############################
 
-# def write_data_national(db_client_conn, data_dict):
-#     d = db_client_conn.andamento_nazionale.insert_one(data_dict)
-#     return d
+def get_last_report(db_client_conn):
+
+    return db_client_conn['last_report'].find_one({'id': 'last_report'})['data']
 
 #########################################################################################
 
@@ -88,4 +88,6 @@ def write_date(db_conn, date):
     indices = db_conn.indices
     indices.insert_one({"id":"date", "value":date})
     return 'OK'
+
+################################################################################
 
