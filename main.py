@@ -1,5 +1,5 @@
 import time
-import subscriptionManager
+import updateManager
 import dataManager
 import dbManager
 import reportManager
@@ -14,7 +14,7 @@ txt_rep = botTools.format_message(data_rep)
 while True:
 
     print("Controllo utenti..")
-    subscriptionManager.process_subscription_request(txt_rep)
+    updateManager.process_subscription_request(txt_rep)
     time.sleep(3)
 
     ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA

@@ -74,6 +74,7 @@ def render_image(data):
     axs[0].set_ylabel('Ricoverati con \nsintomi', color=color)
     axs[0].tick_params(axis='y', labelcolor=color)
     axs[0].tick_params(axis='x', rotation=45)
+    axs[0].grid(color='b', ls='-.', lw=0.25)
     axs[0].plot(data['dates'], data['rc_sint'], color= color)
     plt.setp(axs[0].get_xticklabels(), visible=False)
 
@@ -83,6 +84,7 @@ def render_image(data):
     axs[1].set_ylabel('Ricoverati terap\n intensiva', color=color)
     axs[1].tick_params(axis='y', labelcolor=color)
     axs[1].tick_params(axis='x', rotation=45)
+    axs[1].grid(color='b', ls='-.', lw=0.25)
     axs[1].plot(data['dates'], data['ti'], color= color)
     plt.setp(axs[1].get_xticklabels(), visible=False)
 
@@ -92,6 +94,7 @@ def render_image(data):
     axs[2].set_ylabel('Nuovi positivi', color=color)
     axs[2].tick_params(axis='y', labelcolor=color)
     axs[2].tick_params(axis='x', rotation=45)
+    axs[2].grid(color='b', ls='-.', lw=0.25)
     axs[2].plot(data['dates'], data['np'], color= color)
 
     fig.tight_layout()

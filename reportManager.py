@@ -96,9 +96,6 @@ def weekly_national_data_report():
     week_data = {'dates':week_dates, 'rc_sint':week_rc_sint,'ti':week_ti,
     'np':week_np, 'd':week_d}
 
-    print(week_data['dates'])
-    print(week_data['rc_sint'])
-
     return week_data
 
 # def monthly_national_data_report():  ####TO BE ENABLED

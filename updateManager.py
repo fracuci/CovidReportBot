@@ -68,6 +68,9 @@ def process_request(data, txt_m):
                         except requests.exceptions.HTTPError as e:
                             dbManager.update_request_issue_state(db_connection, 1)
                             return 'Error:  '+str(e)
+                if txt == '/ultimoreport':
+                    reportManager.report_user_text(from_id, txt_m)
+
                 else: #user has issued a different message
                     continue
 
