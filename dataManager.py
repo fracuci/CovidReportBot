@@ -110,8 +110,8 @@ def collect_data():
 def refill_dataset():
     # scrivere funzione per refill unatantum del dataset
 
-    d1 = datetime.date(2020,10,30)  #aggiusta con start-end date
-    d2 = datetime.date(2020,12,24)
+    d1 = datetime.date(2020,12,25)  #aggiusta con start-end date
+    d2 = datetime.date(2020,12,26)
 
     dd = [d1+ datetime.timedelta(days=x) for x in range((d2-d1).days + 1)]
 
@@ -137,4 +137,3 @@ def refill_dataset():
         fill_regional_data(data_regioni, temp_date)
 
     db_connection.close
-

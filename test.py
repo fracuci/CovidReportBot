@@ -167,3 +167,10 @@ db_connection = dbManager.mongodb_connection().covid19DB
 # img = botTools.render_image(graph_data) #renderizzo l'immagine
 # # #mando il messaggio con l'immagine a tutti gli utenti
 # report_users_images(img)
+
+hh, mm ,ss = botTools.get_time()
+
+print(hh,mm, ss)
+
+if hh == 20 and mm == 13 and (ss > 15 and ss < 19):
+    print('ciao')

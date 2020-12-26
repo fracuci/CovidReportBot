@@ -108,5 +108,6 @@ def get_time():
     # restituisce ore e minuti
     hh = datetime.datetime.now().hour
     mm = datetime.datetime.now().minute
+    ss = datetime.datetime.now().second
 
-    return (hh,mm)
+    return (hh,mm, ss)

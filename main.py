@@ -19,14 +19,14 @@ while True:
 
     ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA
     ############# IN UTC, ECT O GMT ##############################
-    hh, mm = botTools.get_time()
-    if (hh == 19 and mm == 45):
+    hh, mm, ss = botTools.get_time()
+    if hh == 19 and mm == 45 and (ss > 15 and ss < 19):
         print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
         dataManager.collect_data()
 
 
-    hh, mm = botTools.get_time()
-    if (hh == 20 and mm == 5):
+    hh, mm, ss = botTools.get_time()
+    if hh == 20 and mm == 5 and (ss > 15 and ss < 19):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         data_rep = reportManager.daily_national_data_report()
         txt_rep = botTools.format_message(data_rep)
