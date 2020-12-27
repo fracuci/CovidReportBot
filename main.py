@@ -28,8 +28,8 @@ while True:
     hh, mm, ss = botTools.get_time()
     if hh == 19 and mm == 10 and (ss > 15 and ss < 19):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
-        #daily_data_rep = reportManager.daily_national_data_report() # chiedo i dati giornalieri
-        daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
+        daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
+        #daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
         users = dbManager.get_all_users(db_connection)
         for u in users:
             daily_report_image_buf = botTools.render_table_img(daily_data_rep)

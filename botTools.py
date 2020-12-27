@@ -107,7 +107,7 @@ def render_image(data):
     return buf #img.show()#buf
 
 def render_table_img(data_dictionary):
-    val1 = ('Dati', 'Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
+    val1 = ('Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
     val2 = ["Ricoverati con sintomi", "Terapia intensiva", "Tot ospedalizzati", "Tot positivi",
             "Nuovi positivi", "Deceduti", "Tamponi", "Percentuale positività"]
 
