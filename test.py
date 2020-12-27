@@ -4,6 +4,10 @@ import csv
 import datetime
 import botTools
 import reportManager
+import io
+import matplotlib.pyplot as plt
+from PIL import Image
+import base64
 
 regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
            'lazio','liguria','lombardia','marche','molise','pabolzano','patrento',
@@ -168,9 +172,95 @@ db_connection = dbManager.mongodb_connection().covid19DB
 # # #mando il messaggio con l'immagine a tutti gli utenti
 # report_users_images(img)
 
-hh, mm ,ss = botTools.get_time()
+# def render_table_img(data_dictionary):
+#     val1 = ('Dati', 'Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
+#     val2 = ["Ricoverati con sintomi", "Terapia intensiva", "Tot ospedalizzati", "Tot positivi",
+#             "Nuovi positivi", "Deceduti", "Tamponi", "Percentuale positività"]
+#
+#     lista = [[str(data_dictionary['ric_sint_oggi']), str(data_dictionary['ric_sint_ieri']),
+#              str(data_dictionary['delta_ric_sint'])], [str(data_dictionary['terapia_int_oggi']),
+#              str(data_dictionary['terapia_int_ieri']), str(data_dictionary['delta_terap_int'])],
+#              [str(data_dictionary['tot_ospedal_oggi']), str(data_dictionary['tot_ospedal_ieri']),
+#              str(data_dictionary['delta_ospedal'])], [str(data_dictionary['tot_positivi_oggi']),
+#              str(data_dictionary['tot_positivi_ieri']), str(data_dictionary['delta_tot_positivi'])],
+#              [str(data_dictionary['nuovi_positivi_oggi']), str(data_dictionary['nuovi_positivi_ieri']),
+#              str(data_dictionary['delta_nuovi_positivi'])], [str(data_dictionary['deceduti_oggi']),
+#              str(data_dictionary['deceduti_ieri']), str(data_dictionary['delta_deceduti'])],
+#              [str(data_dictionary['tamponi_oggi']), " ", " "],[str(data_dictionary['perc_positivita_oggi']), " ", " "]]
+#
+#     fig, ax = plt.subplots()
+#
+#     table = plt.table(cellText=lista,
+#                          rowLabels=val2,
+#                          colLabels=val1,
+#                          loc='center')
+#
+#     ax.set_xticks([])
+#
+#     ax.set_title('Report giornaliero Covid19 in Italia',
+#                  fontweight="bold")
+#
+#     ax = plt.gca()
+#     ax.get_xaxis().set_visible(False)
+#     ax.get_yaxis().set_visible(False)
+#     plt.box(on=None)
+#     table.scale(1,1.5)
+#     pos = ax.get_position()
+#     pos.x0 = 0.25  # for example 0.2, choose your value
+#     ax.set_position(pos)
+#     fig.tight_layout()
+#     buf = io.BytesIO()
+#     fig.savefig(buf)
+#     buf.seek(0)
+#     # img = Image.open(buf, mode='r')
+#     return buf  # img.show()#buf
+#
+# def get_last_report_image(db_client_conn):
+#
+#     return db_client_conn['last_report'].find_one({'id': 'last_report'})['image']
+#
+# def encode_image(buf):
+#
+#     data = io.BytesIO.read(buf)
+#     return base64.b64encode(data)
+#
+# def decode_image(base64file):
+#
+#     data = base64.b64decode(base64file)
+#     buf = io.BytesIO()
+#     buf.write(data)
+#     buf.seek(0)
+#     return buf
+#
+# data = reportManager.weekly_national_data_report()#dbManager.get_last_report(db_connection)
+# buf = botTools.render_image(data)#render_table_img(data)
+# enc = encode_image(buf)
+# db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'weekly_image': enc}})
+# data64_from_db = dbManager.get_last_weekly_report_image(db_connection)#get_last_report_image(db_connection)
+# buf_from_db = decode_image(data64_from_db)
+# img = Image.open(buf_from_db, mode='r')
+# img.show()
+#
+# users = dbManager.get_all_users(db_connection)
+# text = 'ORE 22:35 e 22:37 TEST AGGIORNAMENTO PRODUZIONE'
+# for u in users:
+#         #avviso prima che sto mandando l'immagine del report settimanale
+#         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+#                             + str(u['id']) + \
+#                             '&parse_mode=Markdown&text='+ text
+#         response = requests.get(URL_text_Messages)
 
-print(hh,mm, ss)
+bot_token = botTools.bot_token
+URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates'
+update_request = requests.get(url=URL_Updates)
+data = update_request.json()
+print(data)
 
-if hh == 20 and mm == 13 and (ss > 15 and ss < 19):
-    print('ciao')
+username = data['result'][0]['message']['from']
+
+if 'username' in username:
+    print('ce')
+else:
+    print('non ce')
+
+db_connection.close

@@ -2,13 +2,15 @@ import secrets
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import io
+import base64
 import datetime
 #from PIL import Image ################ TEMPORANEO TOGLIERE!!!
 
 bot_token = secrets.bot_token
 ############ subscriptionManager elements ###############
-bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno sull'andamento nazionale dei
+bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno automaticamente alle 20.01 sull'andamento nazionale dei
 dati sul Covid 19. Se non vuoi più ricevere notifiche digita */stop* o utilizza i comandi inline.
+Digita o utilizza i comandi inline /ultimoreportgiornaliero o /ultimoreportsettimanale per ricevere gli utlimi dati disponibili
 *ATTENZIONE* per motivi logistici potrebbe non essere assicurato il servizio il *SABATO* e la *DOMENICA*"""
 
 bot_message_goodbye = """Sei stato eliminato dalla lista degli utenti. Non riceverai più notifiche sull'andamento nazionale dei dati sul Covid 19. Arrivederci!"""
@@ -104,6 +106,49 @@ def render_image(data):
     #img = Image.open(buf, mode='r')
     return buf #img.show()#buf
 
+def render_table_img(data_dictionary):
+    val1 = ('Dati', 'Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
+    val2 = ["Ricoverati con sintomi", "Terapia intensiva", "Tot ospedalizzati", "Tot positivi",
+            "Nuovi positivi", "Deceduti", "Tamponi", "Percentuale positività"]
+
+    lista = [[str(data_dictionary['ric_sint_oggi']), str(data_dictionary['ric_sint_ieri']),
+             str(data_dictionary['delta_ric_sint'])], [str(data_dictionary['terapia_int_oggi']),
+             str(data_dictionary['terapia_int_ieri']), str(data_dictionary['delta_terap_int'])],
+             [str(data_dictionary['tot_ospedal_oggi']), str(data_dictionary['tot_ospedal_ieri']),
+             str(data_dictionary['delta_ospedal'])], [str(data_dictionary['tot_positivi_oggi']),
+             str(data_dictionary['tot_positivi_ieri']), str(data_dictionary['delta_tot_positivi'])],
+             [str(data_dictionary['nuovi_positivi_oggi']), str(data_dictionary['nuovi_positivi_ieri']),
+             str(data_dictionary['delta_nuovi_positivi'])], [str(data_dictionary['deceduti_oggi']),
+             str(data_dictionary['deceduti_ieri']), str(data_dictionary['delta_deceduti'])],
+             [str(data_dictionary['tamponi_oggi']), " ", " "],[str(data_dictionary['perc_positivita_oggi']), " ", " "]]
+
+    fig, ax = plt.subplots()
+
+    table = plt.table(cellText=lista,
+                         rowLabels=val2,
+                         colLabels=val1,
+                         loc='center')
+
+    ax.set_xticks([])
+
+    ax.set_title('Report giornaliero Covid19 in Italia',
+                 fontweight="bold")
+
+    ax = plt.gca()
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
+    plt.box(on=None)
+    table.scale(1,1.5)
+    pos = ax.get_position()
+    pos.x0 = 0.40  # for example 0.2, choose your value
+    ax.set_position(pos)
+    #fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf)
+    buf.seek(0)
+    # img = Image.open(buf, mode='r')
+    return buf  # img.show()#buf
+
 def get_time():
     # restituisce ore e minuti
     hh = datetime.datetime.now().hour
@@ -111,3 +156,16 @@ def get_time():
     ss = datetime.datetime.now().second
 
     return (hh,mm, ss)
+
+def encode_image(buf):
+
+    data = io.BytesIO.read(buf)
+    return base64.b64encode(data)
+
+def decode_image(base64file):
+
+    data = base64.b64decode(base64file)
+    buf = io.BytesIO()
+    buf.write(data)
+    buf.seek(0)
+    return buf

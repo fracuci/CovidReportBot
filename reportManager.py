@@ -23,7 +23,7 @@ regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friuliv
 
 def daily_national_data_report():
     # restituisce  i dati di ieri e oggi
-    report_data = {'today': date.strftime("Oggi: %d-%m-%Y")}
+    report_data = {'today': date.strftime("%d-%m-%Y")}
     today = int(date.strftime("%Y%m%d"))
     yesterday = today-1
 
@@ -71,8 +71,8 @@ def daily_national_data_report():
 
 def weekly_national_data_report():
     # restituisce i dati dell'ultima settimana da plottare
-    today = int(date.strftime("%Y%m%d"))
-    l_week = today - 7 #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+    today = int(date.strftime("%Y%m%d")) - 1
+    l_week = today - 8 #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
 
     lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week,'$lte': today}})
 
@@ -138,29 +138,28 @@ def report_all_users_text(text_message):
 
     return '200 OK'
 
-def report_user_text(from_id, text_message):
+def report_single_user(from_id, img_message):
 
-    URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-                            + str(from_id) + \
-                                       '&parse_mode=Markdown&text=' + text_message
-    requests.get(URL_text_Messages)
+    URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
+                       + str(from_id)
+    requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
 
     return '200 OK'
 
-def report_users_images(img_message):
-    users = dbManager.get_all_users(db_connection)
-    for u in users:
+def report_users_images(user_id, text, img_message):
+
         #avviso prima che sto mandando l'immagine del report settimanale
         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-                            + str(u['id']) + \
-                            '&parse_mode=Markdown&text='+'Report settimanale monitoraggio Covid19'
+                            + str(user_id) + \
+                            '&parse_mode=Markdown&text='+ text
         requests.get(URL_text_Messages)
 
         URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
-                           + str(u['id'])
-        requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
+                           + str(user_id)
+        r = requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
+        print(r.text)
 
-    return '200 OK'
+        return '200 OK'
 
 ####################### DA VEDERE SE IN FUTURO SI POTRÀ SCRIVERE QUELLA PER LE REGIONI (SPERIAMO FINISCA #####
 ###################### TUTTO PRIMA :( ########################################################################

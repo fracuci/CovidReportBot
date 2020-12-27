@@ -76,6 +76,17 @@ def get_last_report(db_client_conn):
 
     return db_client_conn['last_report'].find_one({'id': 'last_report'})['data']
 
+################################## Manage Report Images #######################
+
+def get_last_report_image(db_client_conn):
+
+    return db_client_conn['last_report'].find_one({'id': 'last_report'})['image']
+
+def get_last_weekly_report_image(db_client_conn):
+
+    return db_client_conn['last_report'].find_one({'id': 'last_report'})['weekly_image']
+
+
 #########################################################################################
 
 

@@ -18,7 +18,7 @@ def cache_update_request(request_data): #cache request in db if something went w
     return up
 
 
-def process_request(data, txt_m):
+def process_request(data, daily_data_rep, weekly_data_rep):
 
     if len(data['result']) > 0:
 
@@ -29,7 +29,9 @@ def process_request(data, txt_m):
 
             is_bot = data['result'][i]['message']['from']['is_bot']
             from_id = data['result'][i]['message']['from']['id']
-            username = data['result'][i]['message']['from']['username']
+            username = 'unknown'
+            if 'username' in data['result'][i]['message']['from']:
+                username = data['result'][i]['message']['from']['username']
             txt = data['result'][i]['message']['text']
 
             if is_bot:
@@ -42,7 +44,9 @@ def process_request(data, txt_m):
                                        + str(from_id) + \
                                        '&parse_mode=Markdown&text=' + bot_message_welcome
                         response = requests.get(URL_Messages)
-                        reportManager.report_user_text(from_id, txt_m)
+
+                        daily_report_image_buf = botTools.render_table_img(daily_data_rep)
+                        reportManager.report_users_images(from_id, 'Ultimi dati giornalieri' , daily_report_image_buf)
 
                         try:# actually.. with Telegram Server when response code is NOT 200..????
                             response.raise_for_status()
@@ -68,14 +72,19 @@ def process_request(data, txt_m):
                         except requests.exceptions.HTTPError as e:
                             dbManager.update_request_issue_state(db_connection, 1)
                             return 'Error:  '+str(e)
-                if txt == '/ultimoreport':
-                    reportManager.report_user_text(from_id, txt_m)
+                if txt == '/ultimoreportgiornaliero':
+                    daily_report_image_buf = botTools.render_table_img(daily_data_rep)
+                    reportManager.report_users_images(from_id, 'Ultimi dati giornalieri', daily_report_image_buf)
+
+                if txt == '/ultimoreportsettimanale':
+                    weekly_report_image_buf = botTools.render_image(weekly_data_rep)
+                    reportManager.report_users_images(from_id, 'Ultimi dati settimanali', weekly_report_image_buf)
 
                 else: #user has issued a different message
                     continue
 
 
-def process_subscription_request(text_m):
+def process_subscription_request(daily_data_rep, weekly_data_rep):
     offset = dbManager.get_last_offset(db_connection)
     URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates?offset=' + str(offset)
 
@@ -83,7 +92,7 @@ def process_subscription_request(text_m):
 
     if prev_status == 1:
         data_bak = dbManager.get_cached_request(db_connection)
-        process_request(data_bak, text_m)
+        process_request(data_bak, daily_data_rep, weekly_data_rep)
 
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
@@ -95,6 +104,6 @@ def process_subscription_request(text_m):
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
         cache_update_request(data)
-        process_request(data_curr, text_m)
+        process_request(data_curr, daily_data_rep, weekly_data_rep)
 
         db_connection.close
