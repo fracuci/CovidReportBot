@@ -6,7 +6,7 @@ import botTools
 import reportManager
 import io
 import matplotlib.pyplot as plt
-from PIL import Image
+#from PIL import Image
 import base64
 
 regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
@@ -232,23 +232,27 @@ def decode_image(base64file):
     buf.seek(0)
     return buf
 
-data = dbManager.get_last_report(db_connection)
-buf = botTools.render_table_img(data)#render_table_img(data)
-enc = encode_image(buf)
-db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'image': enc}})
-data64_from_db = get_last_report_image(db_connection)
-buf_from_db = decode_image(data64_from_db)
-img = Image.open(buf_from_db, mode='r')
-img.show()
+# data = dbManager.get_last_report(db_connection)
+# buf = botTools.render_table_img(data)#render_table_img(data)
+# enc = encode_image(buf)
+# db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'image': enc}})
+# data64_from_db = get_last_report_image(db_connection)
+# buf_from_db = decode_image(data64_from_db)
+# img = Image.open(buf_from_db, mode='r')
+# img.show()
 #
-# users = dbManager.get_all_users(db_connection)
-# text = 'ORE 22:35 e 22:37 TEST AGGIORNAMENTO PRODUZIONE'
-# for u in users:
-#         #avviso prima che sto mandando l'immagine del report settimanale
-#         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-#                             + str(u['id']) + \
-#                             '&parse_mode=Markdown&text='+ text
-#         response = requests.get(URL_text_Messages)
+users = dbManager.get_all_users(db_connection)
+text = """AGGIORNAMENTO BOT 28/12/2020:
+ - Il report giornaliero viene inviato come *immagine* automaticamente ogni *giorno* alle 20.10 o su richiesta usando il comando /ultimoreportgiornaliero
+ - Il report settimanale viene inviato come *immagine* automaticamente ogni *domenica* alle 20.10 o su richiesta usando il comando /ultimoreportsettimanale
+ """
+for u in users:
+        # #avviso prima che sto mandando l'immagine del report settimanale
+        # URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+        #                     + str(u['id']) + \
+        #                     '&parse_mode=Markdown&text='+ text
+        # response = requests.get(URL_text_Messages)
+        print(u['id'])
 
 # bot_token = botTools.bot_token
 # URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates'
@@ -264,3 +268,5 @@ img.show()
 #     print('non ce')
 
 db_connection.close
+
+print(botTools.get_time())

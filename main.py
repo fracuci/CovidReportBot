@@ -20,20 +20,20 @@ while True:
     ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA
     ############# IN UTC, ECT O GMT ##############################
     hh, mm, ss = botTools.get_time()
-    if hh == 18 and mm == 45 and (ss > 15 and ss < 19):
+    if hh == 18 and mm == 45 and (ss > 10 and ss < 20):
         print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
         dataManager.collect_data()
         time.sleep(60)
 
     hh, mm, ss = botTools.get_time()
-    if hh == 19 and mm == 10 and (ss > 15 and ss < 19):
+    if hh == 21 and mm == 4 and (ss > 10 and ss < 20):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
         #daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
         users = dbManager.get_all_users(db_connection)
         for u in users:
             daily_report_image_buf = botTools.render_table_img(daily_data_rep)
-            reportManager.report_users_images(u,'Report giornaliero', daily_report_image_buf)
+            reportManager.report_users_images(u['id'],'Report giornaliero', daily_report_image_buf)
 
         daily_report_image_buf = botTools.render_table_img(daily_data_rep)
         daily_report_image_encoded = botTools.encode_image(daily_report_image_buf) #codifico in base64 per il db
@@ -41,7 +41,7 @@ while True:
 
         time.sleep(60)
 
-        if datetime.datetime.today().weekday() == 0:  # controllo se è domenica
+        if datetime.datetime.today().weekday() == 6:  # controllo se è domenica
 
             weekly_data_rep = reportManager.weekly_national_data_report() # chiedo i dati settimanali
             weekly_report_image_buf = botTools.render_image(weekly_data_rep) #renderizzo l'immagine
@@ -51,5 +51,5 @@ while True:
             users = dbManager.get_all_users(db_connection)
             for u in users:
                 weekly_report_image_buf = botTools.render_image(weekly_data_rep)
-                reportManager.report_users_images(u, 'Report settimanale', weekly_report_image_buf)
+                reportManager.report_users_images(u['id'], 'Report settimanale', weekly_report_image_buf)
             time.sleep(60)
