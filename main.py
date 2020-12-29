@@ -26,7 +26,7 @@ while True:
         time.sleep(60)
 
     hh, mm, ss = botTools.get_time()
-    if hh == 20 and mm == 43 and (ss > 10 and ss < 20):
+    if hh == 19 and mm == 10 and (ss > 10 and ss < 20):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
         #daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
