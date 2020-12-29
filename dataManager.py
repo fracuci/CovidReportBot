@@ -4,7 +4,6 @@ import datetime
 
 
 db_connection = dbManager.mongodb_connection().covid19DB
-date = datetime.date.today().strftime("%Y%m%d")
 regioni = ['fuffa', 'abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
            'lazio','liguria','lombardia','marche','molise','pabolzano','patrento',
            'piemonte','puglia','sardegna','sicilia','toscana','umbria','vaosta','veneto']
@@ -58,7 +57,7 @@ def str_to_list_region(data):
 #     client.close()
 
 
-def fill_national_data(data_list):
+def fill_national_data(data_list, date):
 
     payload = {}
 
@@ -70,7 +69,7 @@ def fill_national_data(data_list):
     db_connection.andamento_nazionale.insert_one(payload)
 
 
-def fill_regional_data(data_list):
+def fill_regional_data(data_list, date):
 
     for i in range(1, 22):
         payload = {}
@@ -85,6 +84,8 @@ def fill_regional_data(data_list):
 
 def collect_data():
 
+    date = datetime.date.today().strftime("%Y%m%d")
+
     URL_italia = 'https://raw.githubusercontent.com/pcm-dpc/COVID-19/master/' \
                  'dati-andamento-nazionale/dpc-covid19-ita-andamento-nazionale-' + date + '.csv'
 
@@ -95,13 +96,13 @@ def collect_data():
     r_italia = requests.get(url=URL_italia)
     #processo e salvo il dato nazionale
     data_italia = str_to_list_national(r_italia.text)
-    fill_national_data(data_italia)
+    fill_national_data(data_italia, date)
 
     #chiedo il dato regione per regione
     r_regioni = requests.get(url=URL_regioni)
     #processo e salvo il dato regione per regione
     data_regioni = str_to_list_region(r_regioni.text)
-    fill_regional_data(data_regioni)
+    fill_regional_data(data_regioni, date)
 
     db_connection.close
 

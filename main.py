@@ -16,9 +16,9 @@ while True:
     print("Controllo utenti..")
     updateManager.process_subscription_request(daily_data_rep, weekly_data_rep)
     time.sleep(3)
-
-    ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA
-    ############# IN UTC, ECT O GMT ##############################
+    #
+    # ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA
+    # ############# IN UTC, ECT O GMT ##############################
     hh, mm, ss = botTools.get_time()
     if hh == 18 and mm == 45 and (ss > 10 and ss < 20):
         print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
@@ -26,7 +26,7 @@ while True:
         time.sleep(60)
 
     hh, mm, ss = botTools.get_time()
-    if hh == 21 and mm == 4 and (ss > 10 and ss < 20):
+    if hh == 20 and mm == 43 and (ss > 10 and ss < 20):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
         #daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
@@ -35,9 +35,9 @@ while True:
             daily_report_image_buf = botTools.render_table_img(daily_data_rep)
             reportManager.report_users_images(u['id'],'Report giornaliero', daily_report_image_buf)
 
-        daily_report_image_buf = botTools.render_table_img(daily_data_rep)
-        daily_report_image_encoded = botTools.encode_image(daily_report_image_buf) #codifico in base64 per il db
-        db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'image': daily_report_image_encoded}})
+        #daily_report_image_buf = botTools.render_table_img(daily_data_rep)
+        #daily_report_image_encoded = botTools.encode_image(daily_report_image_buf) #codifico in base64 per il db
+        #db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'image': daily_report_image_encoded}})
 
         time.sleep(60)
 

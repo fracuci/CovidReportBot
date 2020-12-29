@@ -242,17 +242,15 @@ def decode_image(base64file):
 # img.show()
 #
 users = dbManager.get_all_users(db_connection)
-text = """AGGIORNAMENTO BOT 28/12/2020:
- - Il report giornaliero viene inviato come *immagine* automaticamente ogni *giorno* alle 20.10 o su richiesta usando il comando /ultimoreportgiornaliero
- - Il report settimanale viene inviato come *immagine* automaticamente ogni *domenica* alle 20.10 o su richiesta usando il comando /ultimoreportsettimanale
+text = """ Fixato bug sull'aggiornamento della data
  """
-for u in users:
-        # #avviso prima che sto mandando l'immagine del report settimanale
-        # URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-        #                     + str(u['id']) + \
-        #                     '&parse_mode=Markdown&text='+ text
-        # response = requests.get(URL_text_Messages)
-        print(u['id'])
+# for u in users:
+#         #avviso prima che sto mandando l'immagine del report settimanale
+#         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+#                             + str(u['id']) + \
+#                             '&parse_mode=Markdown&text='+ text
+#         response = requests.get(URL_text_Messages)
+#         print(u['id'])
 
 # bot_token = botTools.bot_token
 # URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates'
