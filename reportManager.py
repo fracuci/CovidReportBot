@@ -14,7 +14,7 @@ import requests
 #######################################################################################################################
 
 db_connection = dbManager.mongodb_connection().covid19DB
-date = datetime.date.today()
+
 bot_token = botTools.bot_token
 regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
            'lazio','liguria','lombardia','marche','molise','pabolzano','patrento',
@@ -22,6 +22,7 @@ regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friuliv
 
 
 def daily_national_data_report():
+    date = datetime.date.today()
     # restituisce  i dati di ieri e oggi
     report_data = {'today': date.strftime("%d-%m-%Y")}
     today = int(date.strftime("%Y%m%d"))
@@ -70,6 +71,7 @@ def daily_national_data_report():
 
 
 def weekly_national_data_report():
+    date = datetime.date.today()
     # restituisce i dati dell'ultima settimana da plottare
     today = int(date.strftime("%Y%m%d")) - 1
     l_week = today - 8 #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
