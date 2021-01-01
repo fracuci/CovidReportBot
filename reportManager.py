@@ -22,11 +22,15 @@ regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friuliv
 
 
 def daily_national_data_report():
-    date = datetime.date.today()
+
     # restituisce  i dati di ieri e oggi
-    report_data = {'today': date.strftime("%d-%m-%Y")}
-    today = int(date.strftime("%Y%m%d"))
-    yesterday = today-1
+
+    today_date = datetime.date.today()
+    yesterday_date = today_date - datetime.timedelta(1)
+
+    report_data = {'today': today_date.strftime("%d-%m-%Y")}
+    today = int(today_date.strftime("%Y%m%d"))
+    yesterday = int(yesterday_date.strftime("%Y%m%d"))
 
     today_query = db_connection.andamento_nazionale.find_one({'date': {'$eq': today}})
     yesterday_query = db_connection.andamento_nazionale.find_one({'date': {'$eq': yesterday}})
@@ -71,10 +75,11 @@ def daily_national_data_report():
 
 
 def weekly_national_data_report():
-    date = datetime.date.today()
+    today_date = datetime.date.today() - datetime.timedelta(1)
     # restituisce i dati dell'ultima settimana da plottare
-    today = int(date.strftime("%Y%m%d")) - 1
-    l_week = today - 8 #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+    today = int(today_date.strftime("%Y%m%d"))
+    l_week_date = today_date - datetime.timedelta(7) #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+    l_week = int(l_week_date.strftime("%Y%m%d"))
 
     lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week,'$lte': today}})
 
