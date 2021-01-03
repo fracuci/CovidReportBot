@@ -31,8 +31,10 @@ while True:
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
         #daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
         users = dbManager.get_all_users(db_connection)
+        daily_report_figure = botTools.render_table_img(daily_data_rep)
+
         for u in users:
-            daily_report_image_buf = botTools.render_table_img(daily_data_rep)
+            daily_report_image_buf = botTools.buf_image(daily_report_figure)
             reportManager.report_users_images(u['id'],'Report giornaliero', daily_report_image_buf)
 
         #daily_report_image_buf = botTools.render_table_img(daily_data_rep)
@@ -49,7 +51,9 @@ while True:
             db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'weekly_image': weekly_report_image_encoded}})
             #mando il messaggio con l'immagine a tutti gli utenti
             users = dbManager.get_all_users(db_connection)
+            weekly_report_figure = botTools.render_image(weekly_data_rep)
+
             for u in users:
-                weekly_report_image_buf = botTools.render_image(weekly_data_rep)
+                weekly_report_image_buf = botTools.buf_image(weekly_report_figure)
                 reportManager.report_users_images(u['id'], 'Report settimanale', weekly_report_image_buf)
             time.sleep(60)

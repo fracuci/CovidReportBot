@@ -100,11 +100,17 @@ def render_image(data):
     axs[2].plot(data['dates'], data['np'], color= color)
 
     fig.tight_layout()
-    buf = io.BytesIO()
-    fig.savefig(buf)
-    buf.seek(0)
+    # buf = io.BytesIO()
+    # fig.savefig(buf)
+    # buf.seek(0)
     #img = Image.open(buf, mode='r')
-    return buf #img.show()#buf
+    return fig #buf #img.show()#buf
+
+def buf_image(figure):
+    buf = io.BytesIO()
+    figure.savefig(buf)
+    buf.seek(0)
+    return buf
 
 def render_table_img(data_dictionary):
     val1 = ('Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
@@ -126,8 +132,21 @@ def render_table_img(data_dictionary):
 
     table = plt.table(cellText=lista,
                          rowLabels=val2,
+                         rowLoc='right',
                          colLabels=val1,
                          loc='center')
+
+    table[(1, -1)].set_facecolor("#ffff00")
+    table[(2, -1)].set_facecolor("#ffff00")
+    table[(3, -1)].set_facecolor("#ffff00")
+    table[(4, -1)].set_facecolor("#ffff00")
+    table[(5, -1)].set_facecolor("#ffff00")
+    table[(6, -1)].set_facecolor("#ffff00")
+    table[(7, -1)].set_facecolor("#ffff00")
+    table[(8, -1)].set_facecolor("#ffff00")
+    table[(0, 0)].set_facecolor("#00FFFF")
+    table[(0, 1)].set_facecolor("#00FFFF")
+    table[(0, 2)].set_facecolor("#00FFFF")
 
     ax.set_xticks([])
 
@@ -138,16 +157,16 @@ def render_table_img(data_dictionary):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     plt.box(on=None)
-    table.scale(1,1.5)
+    table.scale(1.2,2)
     pos = ax.get_position()
-    pos.x0 = 0.40  # for example 0.2, choose your value
+    pos.x0 = 0.35  # for example 0.2, choose your value
     ax.set_position(pos)
     #fig.tight_layout()
-    buf = io.BytesIO()
-    fig.savefig(buf)
-    buf.seek(0)
+    # buf = io.BytesIO()
+    # fig.savefig(buf)
+    # buf.seek(0)
     # img = Image.open(buf, mode='r')
-    return buf  # img.show()#buf
+    return fig #buf  # img.show()#buf
 
 def get_time():
     # restituisce ore e minuti

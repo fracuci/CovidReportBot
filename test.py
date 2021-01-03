@@ -6,7 +6,8 @@ import botTools
 import reportManager
 import io
 import matplotlib.pyplot as plt
-#from PIL import Image
+import matplotlib.dates as mdates
+from PIL import Image
 import base64
 
 regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
@@ -114,66 +115,70 @@ db_connection = dbManager.mongodb_connection().covid19DB
 
 
 # d = weekly_national_data_report()
-# img = botTools.render_image(d)
-#
-# report_users_images(img)
 
-# graph_data = reportManager.weekly_national_data_report() # chiedo i dati settimanali
-# img = botTools.render_image(graph_data) #renderizzo l'immagine
-# #mando il messaggio con l'immagine a tutti gli utenti
-# reportManager.report_users_images(img)
 
-# def weekly_national_data_report():
-#     # restituisce i dati dell'ultima settimana da plottare
-#     today = 20201224#int(date.strftime("%Y%m%d"))
-#     l_week = today - 7 #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+
+# data = dbManager.get_last_report(db_connection)
+# buf = botTools.render_table_img(data)#render_table_img(data)
+# enc = encode_image(buf)
+# db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'image': enc}})
+# data64_from_db = get_last_report_image(db_connection)
+# buf_from_db = decode_image(data64_from_db)
+# img = Image.open(buf_from_db, mode='r')
+# img.show()
 #
-#     lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week,'$lte': today}})
-#
-#     db_connection.close
-#
-#     week_dates = [] #date dell'ultima settimana
-#     week_rc_sint = [] #ricoverati con sintomi ultima settimana
-#     week_ti = [] # terapia intensiva ultima settimana
-#     week_np = [] # nuovi positivi ultima settimana
-#     week_d = [] #deceduti  ultima settimana
-#
-#     for el in lweek_query:
-#
-#         d = datetime.datetime.strptime(str(el['date']),"%Y%m%d")
-#         week_dates.append(d)
-#         week_rc_sint.append(int((el['ricoverati_con_sintomi'])))
-#         week_ti.append(int((el['terapia_intensiva'])))
-#         week_np.append(int((el['nuovi_positivi'])))
-#         week_d.append(int(el['deceduti']))
-#
-#     week_data = {'dates':week_dates, 'rc_sint':week_rc_sint,'ti':week_ti,
-#     'np':week_np, 'd':week_d}
-#
-#     return week_data
-#
-# def report_users_images(img_message):
-#     users = dbManager.get_all_users(db_connection)
-#     for u in users:
-#         #avviso prima che sto mandando l'immagine del report settimanale
-#         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-#                             + str(551420370) + \
-#                             '&parse_mode=Markdown&text='+'Report settimanale monitoraggio Covid19'
-#         requests.get(URL_text_Messages)
-#
-#         URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
-#                            + str(u['id'])
-#         requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
-#
-#     return '200 OK'
-#
-# graph_data = weekly_national_data_report() # chiedo i dati settimanali
-# img = botTools.render_image(graph_data) #renderizzo l'immagine
-# # #mando il messaggio con l'immagine a tutti gli utenti
-# report_users_images(img)
+user = '551420370'
+text = """ Fixato bug sull'aggiornamento della data
+ """
+
+
+def render_image(data):
+    fig, axs = plt.subplots(3)
+
+    formatter = mdates.DateFormatter("%m/%d")
+    locator = mdates.DayLocator()
+
+    color = 'tab:orange'
+    axs[0].xaxis.set_major_formatter(formatter)
+    axs[0].xaxis.set_major_locator(locator)
+    axs[0].set_ylabel('Ricoverati con \nsintomi', color=color)
+    axs[0].tick_params(axis='y', labelcolor=color)
+    axs[0].tick_params(axis='x', rotation=45)
+    axs[0].grid(color='b', ls='-.', lw=0.25)
+    axs[0].plot(data['dates'], data['rc_sint'], color= color)
+    for d,val in zip(data['dates'],data['rc_sint']):
+        axs[0].text(d,val + 10, str(val), fontsize=8)
+    plt.setp(axs[0].get_xticklabels(), visible=False)
+
+    axs[1].xaxis.set_major_formatter(formatter)
+    axs[1].xaxis.set_major_locator(locator)
+    color = 'tab:red'
+    axs[1].set_ylabel('Ricoverati terap\n intensiva', color=color)
+    axs[1].tick_params(axis='y', labelcolor=color)
+    axs[1].tick_params(axis='x', rotation=45)
+    axs[1].grid(color='b', ls='-.', lw=0.25)
+    axs[1].plot(data['dates'], data['ti'], color= color)
+    plt.setp(axs[1].get_xticklabels(), visible=False)
+
+    axs[2].xaxis.set_major_formatter(formatter)
+    axs[2].xaxis.set_major_locator(locator)
+    color = 'tab:blue'
+    axs[2].set_ylabel('Nuovi positivi', color=color)
+    axs[2].tick_params(axis='y', labelcolor=color)
+    axs[2].tick_params(axis='x', rotation=45)
+    axs[2].grid(color='b', ls='-.', lw=0.25)
+    axs[2].plot(data['dates'], data['np'], color= color)
+
+    fig.tight_layout()
+    # buf = io.BytesIO()
+    # fig.savefig(buf)
+    # buf.seek(0)
+    #img = Image.open(buf, mode='r')
+    return fig #buf #img.show()#buf
+
 
 def render_table_img(data_dictionary):
-    val1 = ('Dati', 'Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
+    val1 = ('Giorno: '+data_dictionary['today'], 'Giorno precedente', 'Variazione')
     val2 = ["Ricoverati con sintomi", "Terapia intensiva", "Tot ospedalizzati", "Tot positivi",
             "Nuovi positivi", "Deceduti", "Tamponi", "Percentuale positività"]
 
@@ -189,11 +194,23 @@ def render_table_img(data_dictionary):
              [str(data_dictionary['tamponi_oggi']), " ", " "],[str(data_dictionary['perc_positivita_oggi']), " ", " "]]
 
     fig, ax = plt.subplots()
-
     table = plt.table(cellText=lista,
                          rowLabels=val2,
+                         rowLoc='right',
                          colLabels=val1,
                          loc='center')
+
+    table[(1, -1)].set_facecolor("#ffff00")
+    table[(2, -1)].set_facecolor("#ffff00")
+    table[(3, -1)].set_facecolor("#ffff00")
+    table[(4, -1)].set_facecolor("#ffff00")
+    table[(5, -1)].set_facecolor("#ffff00")
+    table[(6, -1)].set_facecolor("#ffff00")
+    table[(7, -1)].set_facecolor("#ffff00")
+    table[(8, -1)].set_facecolor("#ffff00")
+    table[(0,0)].set_facecolor("#00FFFF")
+    table[(0,1)].set_facecolor("#00FFFF")
+    table[(0, 2)].set_facecolor("#00FFFF")
 
     ax.set_xticks([])
 
@@ -204,53 +221,34 @@ def render_table_img(data_dictionary):
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     plt.box(on=None)
-    table.scale(1,1.5)
+    table.scale(1.2,2)
     pos = ax.get_position()
-    pos.x0 = 0.25  # for example 0.2, choose your value
+    pos.x0 = 0.35  # for example 0.2, choose your value
     ax.set_position(pos)
-    fig.tight_layout()
-    buf = io.BytesIO()
-    fig.savefig(buf)
-    buf.seek(0)
+    #fig.tight_layout()
+    # buf = io.BytesIO()
+    # fig.savefig(buf)
+    # buf.seek(0)
     # img = Image.open(buf, mode='r')
-    return buf  # img.show()#buf
+    return fig #buf  # img.show()#buf
 
-def get_last_report_image(db_client_conn):
-
-    return db_client_conn['last_report'].find_one({'id': 'last_report'})['image']
-
-def encode_image(buf):
-
-    data = io.BytesIO.read(buf)
-    return base64.b64encode(data)
-
-def decode_image(base64file):
-
-    data = base64.b64decode(base64file)
+def buf_image(figure):
     buf = io.BytesIO()
-    buf.write(data)
+    figure.savefig(buf)
     buf.seek(0)
     return buf
 
-# data = dbManager.get_last_report(db_connection)
-# buf = botTools.render_table_img(data)#render_table_img(data)
-# enc = encode_image(buf)
-# db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'image': enc}})
-# data64_from_db = get_last_report_image(db_connection)
-# buf_from_db = decode_image(data64_from_db)
-# img = Image.open(buf_from_db, mode='r')
-# img.show()
+d = reportManager.daily_national_data_report()
+figure = render_table_img(d)
+buf = botTools.buf_image(figure)
+img = Image.open(buf)
+img.show()
+#print(d)
+
+# for i in range(0,3):
 #
-users = dbManager.get_all_users(db_connection)
-text = """ Fixato bug sull'aggiornamento della data
- """
-# for u in users:
-#         #avviso prima che sto mandando l'immagine del report settimanale
-#         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-#                             + str(u['id']) + \
-#                             '&parse_mode=Markdown&text='+ text
-#         response = requests.get(URL_text_Messages)
-#         print(u['id'])
+#     buf = buf_image(figure)
+#     reportManager.report_users_images(user, 'test', buf)
 
 # bot_token = botTools.bot_token
 # URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates'
@@ -267,4 +265,3 @@ text = """ Fixato bug sull'aggiornamento della data
 
 db_connection.close
 
-print(botTools.get_time())

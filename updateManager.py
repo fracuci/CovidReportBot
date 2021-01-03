@@ -27,6 +27,9 @@ def process_request(data, daily_data_rep, weekly_data_rep):
 
         for i in range(0, len(data['result'])):
 
+            if 'message' not in data['result'][i]:
+                continue
+
             is_bot = data['result'][i]['message']['from']['is_bot']
             from_id = data['result'][i]['message']['from']['id']
             username = 'unknown'
@@ -45,7 +48,8 @@ def process_request(data, daily_data_rep, weekly_data_rep):
                                        '&parse_mode=Markdown&text=' + bot_message_welcome
                         response = requests.get(URL_Messages)
 
-                        daily_report_image_buf = botTools.render_table_img(daily_data_rep)
+                        daily_report_figure = botTools.render_table_img(daily_data_rep)
+                        daily_report_image_buf = botTools.buf_image(daily_report_figure)
                         reportManager.report_users_images(from_id, 'Ultimi dati giornalieri' , daily_report_image_buf)
 
                         try:# actually.. with Telegram Server when response code is NOT 200..????
@@ -73,11 +77,13 @@ def process_request(data, daily_data_rep, weekly_data_rep):
                             dbManager.update_request_issue_state(db_connection, 1)
                             return 'Error:  '+str(e)
                 if txt == '/ultimoreportgiornaliero':
-                    daily_report_image_buf = botTools.render_table_img(daily_data_rep)
+                    daily_report_figure = botTools.render_table_img(daily_data_rep)
+                    daily_report_image_buf = botTools.buf_image(daily_report_figure)
                     reportManager.report_users_images(from_id, 'Ultimi dati giornalieri', daily_report_image_buf)
 
                 if txt == '/ultimoreportsettimanale':
-                    weekly_report_image_buf = botTools.render_image(weekly_data_rep)
+                    weekly_report_figure = botTools.render_image(weekly_data_rep)
+                    weekly_report_image_buf = botTools.buf_image(weekly_report_figure)
                     reportManager.report_users_images(from_id, 'Ultimi dati settimanali', weekly_report_image_buf)
 
                 else: #user has issued a different message
