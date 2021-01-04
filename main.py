@@ -20,21 +20,22 @@ while True:
     # ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA
     # ############# IN UTC, ECT O GMT ##############################
     hh, mm, ss = botTools.get_time()
-    if hh == 18 and mm == 45 and (ss > 10 and ss < 55):
+    if hh == 17 and mm == 45 and (ss > 10 and ss < 55):
         print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
         dataManager.collect_data()
         time.sleep(60)
 
     hh, mm, ss = botTools.get_time()
-    if hh == 19 and mm == 10 and (ss > 10 and ss < 55):
+    if hh == 18 and mm == 10 and (ss > 10 and ss < 55):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
-        #daily_report_image_buf = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
+        weekly_data_rep = reportManager.weekly_national_data_report()  # aggiorno il report dati settimanali
+
         users = dbManager.get_all_users(db_connection)
-        daily_report_figure = botTools.render_table_img(daily_data_rep)
+        daily_report_figure = botTools.render_table_img(daily_data_rep) #renderizzo la tabella
 
         for u in users:
-            daily_report_image_buf = botTools.buf_image(daily_report_figure)
+            daily_report_image_buf = botTools.buf_image(daily_report_figure) #bufferizzo e mando
             reportManager.report_users_images(u['id'],'Report giornaliero', daily_report_image_buf)
 
         #daily_report_image_buf = botTools.render_table_img(daily_data_rep)
