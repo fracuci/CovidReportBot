@@ -2,6 +2,7 @@ import dbManager
 import datetime
 import botTools
 import requests
+import multiprocessing
 
 ############################################# FUNZIONAMENTO ###########################################################
 # Per il messaggio di testo giornaliero deve esser prima chiamata la funz. daily_national_data_report per poi passare #
@@ -135,23 +136,23 @@ def weekly_national_data_report():
 #
 #     return month_data
 
-def report_all_users_text(text_message):
-    users = dbManager.get_all_users(db_connection)
-    for u in users:
-        URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-                            + str(u['id']) + \
-                                       '&parse_mode=Markdown&text=' + text_message
-        requests.get(URL_text_Messages)
+# def report_all_users_text(text_message): ## DEPRECATED
+#     users = dbManager.get_all_users(db_connection)
+#     for u in users:
+#         URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+#                             + str(u['id']) + \
+#                                        '&parse_mode=Markdown&text=' + text_message
+#         requests.get(URL_text_Messages)
+#
+#     return '200 OK'
 
-    return '200 OK'
-
-def report_single_user(from_id, img_message):
-
-    URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
-                       + str(from_id)
-    requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
-
-    return '200 OK'
+# def report_single_user(from_id, img_message): #### DEPRECATED
+#
+#     URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
+#                        + str(from_id)
+#     requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
+#
+#     return '200 OK'
 
 def report_users_images(user_id, text, img_message):
 
@@ -180,3 +181,59 @@ def report_users_images(user_id, text, img_message):
 
 #txt = daily_national_data_report()
 #img = render_image(WM_national_data_report())
+
+def enqueue_process_day(user, figure):
+
+    daily_report_image_buf = botTools.buf_image(figure)  # bufferizzo e mando
+    report_users_images(str(user), 'Report giornaliero', daily_report_image_buf)
+
+def enqueue_process_week(user, figure):
+
+    weekly_report_image_buf = botTools.buf_image(figure)
+    report_users_images(str(user), 'Report settimanale', weekly_report_image_buf)
+
+def report_multiprocessing(users, figure, type):
+# IMPLEMENTATO MULTI-PROCESSING PER L'INVIO DEI REPORT -> SCALATO DI 1/3 IL TEMPO DI PROCESSING
+# https://www.quantstart.com/articles/Parallelising-Python-with-Threading-and-Multiprocessing/
+
+    target = None
+    if type == 'daily':
+        target = enqueue_process_day
+    else:
+        target = enqueue_process_week
+
+    jobs = []
+    for u in users:
+        process = multiprocessing.Process(target=target, args=(u['id'], figure))
+        jobs.append(process)
+
+    i = len(jobs)
+    if i < 101:
+
+        for j in jobs:
+            j.start()
+
+        for j in jobs:
+            j.join()
+
+    else: # NON PIÙ DI 100 PROCESSI SPAWNATI CONTEMPORANEAMENTE!!!!
+        ### ES: 341 processi da gestire, molt = 341//100 = 3,
+        # da 0 a 99 é 0*100 + 0,1,2.. 99
+        # da 100 a 199 é 1*100 + 0,1,2.. 99
+        # ..
+        # da 300 a 341 é range normale da un numero ad un altro (nell'esempio da 300 a i-1 = 341 [len(jobs) = 342])
+
+        molt = i // 100
+
+        for k in range(0, molt):
+            for j in range(0,100): # [0-99]- [100-199] - [200 - 299]... è matematica!!
+                jobs[j + k*100].start()
+
+            for j in range(0,100):
+                jobs[j + k*100].join()
+
+        for k in range(molt*100, i):
+            jobs[k].start()
+
+        for k in range(molt * 100, i):
+            jobs[k].join()

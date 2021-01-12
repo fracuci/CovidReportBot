@@ -11,7 +11,7 @@ bot_token = secrets.bot_token
 bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno automaticamente alle 20.01 sull'andamento nazionale dei
 dati sul Covid 19. Se non vuoi più ricevere notifiche digita */stop* o utilizza i comandi inline.
 Digita o utilizza i comandi inline /ultimoreportgiornaliero o /ultimoreportsettimanale per ricevere gli utlimi dati disponibili
-*ATTENZIONE* per motivi logistici potrebbe non essere assicurato il servizio il *SABATO* e la *DOMENICA*"""
+"""
 
 bot_message_goodbye = """Sei stato eliminato dalla lista degli utenti. Non riceverai più notifiche sull'andamento nazionale dei dati sul Covid 19. Arrivederci!"""
 
