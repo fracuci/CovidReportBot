@@ -76,6 +76,14 @@ def get_last_report(db_client_conn):
 
     return db_client_conn['last_report'].find_one({'id': 'last_report'})['data']
 
+def get_last_report_vaccine(db_client_conn):
+
+    return db_client_conn['last_report'].find_one({'id': 'last_report'})['data_vaccini']
+
+def get_last_report_anag_vaccini(dbclient_conn):
+
+    return dbclient_conn['last_report'].find_one({'id': 'last_report'})['anag_vaccini']
+
 ################################## Manage Report Images #######################
 
 def get_last_report_image(db_client_conn):

@@ -18,7 +18,7 @@ def cache_update_request(request_data): #cache request in db if something went w
     return up
 
 
-def process_request(data, daily_data_rep, weekly_data_rep):
+def process_request(data, daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep):
 
     if len(data['result']) > 0:
 
@@ -52,6 +52,10 @@ def process_request(data, daily_data_rep, weekly_data_rep):
                         daily_report_image_buf = botTools.buf_image(daily_report_figure)
                         reportManager.report_users_images(from_id, 'Ultimi dati giornalieri' , daily_report_image_buf)
 
+                        daily_report_figure_vaccine = botTools.render_bar_chart_vaccini(daily_vaccine_data_rep)
+                        daily_report_image_vaccine_buf = botTools.buf_image(daily_report_figure_vaccine)
+                        reportManager.report_users_images(from_id,'Andamento vaccinazioni', daily_report_image_vaccine_buf)
+
                         try:# actually.. with Telegram Server when response code is NOT 200..????
                             response.raise_for_status()
 
@@ -81,16 +85,26 @@ def process_request(data, daily_data_rep, weekly_data_rep):
                     daily_report_image_buf = botTools.buf_image(daily_report_figure)
                     reportManager.report_users_images(from_id, 'Ultimi dati giornalieri', daily_report_image_buf)
 
+                if txt == '/andamentovaccinazioni':
+                    daily_report_figure_vaccine = botTools.render_bar_chart_vaccini(daily_vaccine_data_rep)
+                    daily_report_image_vaccine_buf = botTools.buf_image(daily_report_figure_vaccine)
+                    reportManager.report_users_images(from_id, 'Andamento vaccinazioni', daily_report_image_vaccine_buf)
+
                 if txt == '/ultimoreportsettimanale':
                     weekly_report_figure = botTools.render_image(weekly_data_rep)
                     weekly_report_image_buf = botTools.buf_image(weekly_report_figure)
                     reportManager.report_users_images(from_id, 'Ultimi dati settimanali', weekly_report_image_buf)
 
+                if txt == '/anagraficavaccinazionisett':
+                    weekly_report_figure_vaccine = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
+                    weekly_report_figure_vaccine_buf = botTools.buf_image(weekly_report_figure_vaccine)
+                    reportManager.report_users_images(from_id, 'Anagrafica vaccinazioni settimanale', weekly_report_figure_vaccine_buf)
+
                 else: #user has issued a different message
                     continue
 
 
-def process_subscription_request(daily_data_rep, weekly_data_rep):
+def process_subscription_request(daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep):
     offset = dbManager.get_last_offset(db_connection)
     URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates?offset=' + str(offset)
 
@@ -98,7 +112,7 @@ def process_subscription_request(daily_data_rep, weekly_data_rep):
 
     if prev_status == 1:
         data_bak = dbManager.get_cached_request(db_connection)
-        process_request(data_bak, daily_data_rep, weekly_data_rep)
+        process_request(data_bak, daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep)
 
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
@@ -110,6 +124,6 @@ def process_subscription_request(daily_data_rep, weekly_data_rep):
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
         cache_update_request(data)
-        process_request(data_curr, daily_data_rep, weekly_data_rep)
+        process_request(data_curr, daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep)
 
         db_connection.close

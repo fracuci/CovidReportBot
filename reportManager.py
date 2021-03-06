@@ -17,11 +17,11 @@ import multiprocessing
 db_connection = dbManager.mongodb_connection().covid19DB
 
 bot_token = botTools.bot_token
-regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
-           'lazio','liguria','lombardia','marche','molise','pabolzano','patrento',
-           'piemonte','puglia','sardegna','sicilia','toscana','umbria','vaosta','veneto']
+regioni = ['Abruzzo','Basilicata','Calabria','Campania','Emilia-Romagna','Friuli-Venezia Giulia',
+           'Lazio','Liguria','Lombardia','Marche','Molise','Provincia Autonoma Bolzano','Provincia Autonoma Trento',
+           'Piemonte','Puglia','Sardegna','Sicilia','Toscana','Umbria',"Valle d'Aosta",'Veneto']
 
-
+##################### Richiesta dati per report Covid giornaliero e settimanale al DB ###############
 def daily_national_data_report():
 
     # restituisce  i dati di ieri e oggi
@@ -154,6 +154,38 @@ def weekly_national_data_report():
 #
 #     return '200 OK'
 
+##################### Richiesta dati per report Vaccini giornaliero e settimanale al DB #################
+def daily_national_data_vaccine_report():
+    today_date = datetime.date.today()
+    yesterday_date = today_date - datetime.timedelta(1)
+
+    report_data = {'today': today_date.strftime("%d-%m-%Y")}
+    report_data['yesterday'] = yesterday_date.strftime("%d-%m-%Y")
+    today = int(today_date.strftime("%Y%m%d"))
+    yesterday = int(yesterday_date.strftime("%Y%m%d"))
+
+    today_query = db_connection.vaccini.find_one({'date': {'$eq': today}})
+    yesterday_query = db_connection.vaccini.find_one({'date': {'$eq': yesterday}})
+
+    report_data['dosi_naz_somm_oggi'] = int(today_query['Italia']['dosi_somministrate'])
+    report_data['dosi_naz_somm_ieri'] = int(yesterday_query['Italia']['dosi_somministrate'])
+    report_data['delta_dosi_naz_somm'] = report_data['dosi_naz_somm_oggi'] - report_data['dosi_naz_somm_ieri']
+
+    report_data['dosi_naz_cons_oggi'] = int(today_query['Italia']['dosi_consegnate'])
+    report_data['dosi_naz_cons_ieri'] = int(yesterday_query['Italia']['dosi_consegnate'])
+    report_data['delta_dosi_naz_cons'] = report_data['dosi_naz_cons_oggi'] - report_data['dosi_naz_cons_ieri']
+
+    report_data['perc_somm'] = round(report_data['dosi_naz_somm_oggi'] / report_data['dosi_naz_cons_oggi'], 3)*100
+
+
+    db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'data_vaccini': report_data}})
+
+    return report_data
+
+
+###########################################################################################################à
+
+
 def report_users_images(user_id, text, img_message):
 
         #avviso prima che sto mandando l'immagine del report settimanale
@@ -182,17 +214,23 @@ def report_users_images(user_id, text, img_message):
 #txt = daily_national_data_report()
 #img = render_image(WM_national_data_report())
 
-def enqueue_process_day(user, figure):
+def enqueue_process_day(user, figure, figure_vaccine):
 
     daily_report_image_buf = botTools.buf_image(figure)  # bufferizzo e mando
     report_users_images(str(user), 'Report giornaliero', daily_report_image_buf)
 
-def enqueue_process_week(user, figure):
+    daily_report_image_vaccine_buf = botTools.buf_image((figure_vaccine))
+    report_users_images(str(user),'Andamento vaccinazioni', daily_report_image_vaccine_buf)
+
+def enqueue_process_week(user, figure, figure_vaccine):
 
     weekly_report_image_buf = botTools.buf_image(figure)
     report_users_images(str(user), 'Report settimanale', weekly_report_image_buf)
 
-def report_multiprocessing(users, figure, type):
+    weekly_report_image_anag_vaccini_buf = botTools.buf_image(figure_vaccine)
+    report_users_images(str(user), 'Anagrafica vaccinazioni settimanale', weekly_report_image_anag_vaccini_buf)
+
+def report_multiprocessing(users, figure, figure_vaccine, type):
 # IMPLEMENTATO MULTI-PROCESSING PER L'INVIO DEI REPORT -> SCALATO DI 1/3 IL TEMPO DI PROCESSING
 # https://www.quantstart.com/articles/Parallelising-Python-with-Threading-and-Multiprocessing/
 
@@ -204,7 +242,7 @@ def report_multiprocessing(users, figure, type):
 
     jobs = []
     for u in users:
-        process = multiprocessing.Process(target=target, args=(u['id'], figure))
+        process = multiprocessing.Process(target=target, args=(u['id'], figure, figure_vaccine))
         jobs.append(process)
 
     i = len(jobs)

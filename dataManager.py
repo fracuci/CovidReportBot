@@ -35,6 +35,11 @@ def str_to_list_region(data):
         result_list.append(sub_elements)
     return result_list
 
+def str_to_list_vaccine(data):
+    lines = data.split('\n')
+    values = [l.split(',') for l in lines[1:]]
+
+    return values
 
 # def refill_dataset(data, start_date, end_date):
 #     pass
@@ -81,6 +86,18 @@ def fill_regional_data(data_list, date):
         #### scrivere in try-except ###
         db_connection['andamento_'+regioni[i]].insert_one(payload)
 
+def fill_vaccine_data(data_list, date):
+
+    payload = {}
+    payload['date'] = int(date)
+
+    for d in data_list:
+        regione = d[8]
+        if '/' in regione:
+            regione = regione.split(' / ')[0]
+
+        payload[regione] = {'dosi_somministrate': d[1], 'dosi_consegnate': d[2], 'percentuale_somministrazione': d[3]}
+    db_connection['vaccini'].insert_one(payload)
 
 def collect_data():
 
@@ -136,5 +153,53 @@ def refill_dataset():
         # processo e salvo il dato regione per regione
         data_regioni = str_to_list_region(r_regioni.text)
         fill_regional_data(data_regioni, temp_date)
+
+    db_connection.close
+
+
+
+def collect_vaccine_data():
+
+    date = datetime.date.today().strftime("%Y%m%d")
+    URL = 'https://raw.githubusercontent.com/italia/covid19-opendata-vaccini/master/dati/' \
+          'vaccini-summary-latest.csv'
+
+    r_vaccine = requests.get(url=URL)
+    data_vaccine = str_to_list_vaccine(r_vaccine.text)
+    data_vaccine.pop()
+    #elaborazione del dato nazionale
+    dosi_somministrate_nazionale= 0
+    dosi_consegnate_nazionale = 0
+    for d in data_vaccine:
+        dosi_somministrate_nazionale = dosi_somministrate_nazionale + int(d[1])
+        dosi_consegnate_nazionale = dosi_consegnate_nazionale + int(d[2])
+
+    percentuale_somministrazione_nazionale = round(dosi_somministrate_nazionale/dosi_consegnate_nazionale,3)*100
+    dato_nazionale = ['ITA', str(dosi_somministrate_nazionale), str(dosi_consegnate_nazionale),
+                      str(percentuale_somministrazione_nazionale), str(date),'ITF', 'ITF1', '21', 'Italia']
+    # #aggiunta dato nazionale a lista totale
+    data_vaccine.append(dato_nazionale)
+    #riempiemento del DB
+    fill_vaccine_data(data_vaccine, date)
+
+    db_connection.close
+
+def collect_anag_vaccine_data():
+
+    #date = datetime.date.today().strftime("%Y%m%d")
+    URL = 'https://raw.githubusercontent.com/italia/covid19-opendata-vaccini/master/dati/' \
+          'anagrafica-vaccini-summary-latest.csv'
+    r_anag_vaccine = requests.get(url=URL)
+
+    data_anag_vaccine = str_to_list_vaccine(r_anag_vaccine.text)
+    data_anag_vaccine.pop()
+
+    anag_vaccine_dict ={}
+    last_update = datetime.date.today().strftime("%d-%m-%Y")
+    anag_vaccine_dict['last_update'] = last_update
+    for d in data_anag_vaccine:
+        anag_vaccine_dict[d[0]] = {'prima_dose': d[10], 'seconda_dose': d[11], 'totale':d[1]}
+
+    db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'anag_vaccini': anag_vaccine_dict}})
 
     db_connection.close

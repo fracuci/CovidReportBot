@@ -1,6 +1,8 @@
 import secrets
 import matplotlib.pyplot as plt
+from matplotlib import ticker
 import matplotlib.dates as mdates
+import numpy as np
 import io
 import base64
 import datetime
@@ -8,9 +10,11 @@ import datetime
 
 bot_token = secrets.bot_token
 ############ subscriptionManager elements ###############
-bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno automaticamente alle 20.01 sull'andamento nazionale dei
+bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno automaticamente alle 19.10 sull'andamento nazionale dei
 dati sul Covid 19. Se non vuoi più ricevere notifiche digita */stop* o utilizza i comandi inline.
-Digita o utilizza i comandi inline /ultimoreportgiornaliero o /ultimoreportsettimanale per ricevere gli utlimi dati disponibili
+Digita o utilizza i comandi inline /ultimoreportgiornaliero o /ultimoreportsettimanale per ricevere gli ultimi dati disponibili
+sull'andamento della Covid19, utilizza i comandi inline /andamentovaccinazioni e /anagraficavaccinazionisett per ricevere gli ultimi
+dati disponibili sull'andamento delle vaccinazioni
 """
 
 bot_message_goodbye = """Sei stato eliminato dalla lista degli utenti. Non riceverai più notifiche sull'andamento nazionale dei dati sul Covid 19. Arrivederci!"""
@@ -167,6 +171,96 @@ def render_table_img(data_dictionary):
     # buf.seek(0)
     # img = Image.open(buf, mode='r')
     return fig #buf  # img.show()#buf
+
+def render_bar_chart_vaccini(data_dictionary):
+
+    dates = [data_dictionary['yesterday'], data_dictionary['today']]
+    dosi_somm = [int(data_dictionary['dosi_naz_somm_ieri']), int(data_dictionary['dosi_naz_somm_oggi'])]
+    dosi_cons = [int(data_dictionary['dosi_naz_cons_ieri']), int(data_dictionary['dosi_naz_cons_oggi'])]
+
+    x = np.arange(len(dates))  # the label locations
+    width = 0.15# the width of the bars
+
+    fig, ax = plt.subplots()
+    ax.bar(x - width/2,dosi_somm, width, label='Dosi somministrate')
+    ax.bar(x + width/2,dosi_cons, width, label='Dosi consegnate')
+    ax.axhline(y= dosi_somm[1], xmax = 1, linestyle ='--')
+    ax.axhline(y= dosi_cons[1], xmax = 1, color= 'orange', linestyle ='--')
+    ax.annotate('{0} (+ {1})'.format(dosi_somm[1], dosi_somm[1] - dosi_somm[0]),
+                xy=(0.5, dosi_somm[1]), xytext=(0,3),
+                textcoords="offset points",
+                ha='center', va='bottom')
+    ax.annotate('{0} (+ {1})'.format(dosi_cons[1], dosi_cons[1] - dosi_cons[0]),
+                xy=(0.5, dosi_cons[1]), xytext=(0, 1),
+                textcoords="offset points",
+                ha='center', va='bottom')
+
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Conteggio')
+    formatter = ticker.ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-1, 1))
+    ax.yaxis.set_major_formatter(formatter)
+    ax.set_title('    Report giornaliero dosi somministrate/consegnate')
+    ax.set_xticks(x)
+    ax.set_xticklabels(dates)
+    ax.legend(
+               #loc='lower center',
+               bbox_to_anchor=(0.5, 0.5, 0.0, 0.0), fontsize='small')
+
+    return fig
+
+def render_bar_chart_anag_vaccini(data_dictionary):
+
+    last_update = data_dictionary['last_update']
+    age_range = [k for k in data_dictionary]
+    age_range.pop(0)
+
+    prime_dosi = []
+    seconde_dosi = []
+    totali = []
+
+    for ar in age_range:
+        prime_dosi.append(int(data_dictionary[ar]['prima_dose']))
+        seconde_dosi.append(int(data_dictionary[ar]['seconda_dose']))
+        totali.append(int(data_dictionary[ar]['totale']))
+
+    width = 0.85  # the width of the bars
+    fig, ax = plt.subplots()
+
+    p_d = ax.bar(age_range, prime_dosi, width, label='Prime dosi', color='springgreen')
+    s_d = ax.bar(age_range, seconde_dosi, width, bottom=prime_dosi,  label='Seconde dosi', color='seagreen')
+
+
+    ax.set_ylabel('Conteggio')
+    formatter = ticker.ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-1, 1))
+    ax.yaxis.set_major_formatter(formatter)
+    ax.set_title("        Report settimanale dosi somministrate per fascia d'età")
+    ax.legend(loc='upper left')
+        #loc='lower center',
+        #bbox_to_anchor=(0.5, 0.5, 0.0, 0.0), fontsize='small')
+
+    ax.tick_params(axis='x', rotation=45)
+
+    for i in range(0, len(p_d)):
+        height_el_p_d = p_d[i].get_height()
+        height_el_s_d = s_d[i].get_height()
+        ax.annotate('{:.1f}K'.format(height_el_p_d/1000), xy=(p_d[i].get_x() + p_d[i].get_width()/2,
+                    height_el_p_d/2), xytext=(0, 0), textcoords="offset points", ha='center',
+                    va='bottom', fontsize=8, fontweight='bold')
+
+        ax.annotate('{:.1f}K'.format(height_el_s_d/1000), xy=(s_d[i].get_x() + s_d[i].get_width()/2,
+                    height_el_s_d/2.3 + height_el_p_d), xytext=(0, 0), textcoords="offset points", ha='center',
+                    va='bottom', fontsize=8, fontweight='bold')
+
+        ax.annotate('{:.1f}K'.format(totali[i] / 1000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
+                    height_el_s_d + height_el_p_d + 10000), xytext=(0, 0), textcoords="offset points", ha='center',
+                    va='bottom', fontsize=8, fontweight='bold')
+
+    return fig
 
 def get_time():
     # restituisce ore e minuti
