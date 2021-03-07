@@ -168,7 +168,7 @@ print(datetime.datetime.today().weekday())
 weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
 print(weekly_anag_vaccini_rep)
 
-
+daily_top_region_pos = dbManager.get_last_report_top_reg_nuovi_pos(db_connection.covid19DB)
 
 def render_bar_chart_vaccini(data_dictionary):
 
@@ -263,11 +263,38 @@ def render_bar_chart_anag_vaccini(data_dictionary):
 
     return fig
 
+def format_text_top_5_reg_nuovi_pos(data_dictionary):
+    txt = "Report giornaliero\nTop 5 regioni per nuovi positivi (perc. positività):\n"
 
-#
+    for k in data_dictionary:
+
+        s =   "-" + data_dictionary[k]['denom'] + ' '+ str(data_dictionary[k]['nuovi_positivi'])+ \
+             ' '+'({:.1%})'.format(data_dictionary[k]['perc_positivita'])+ " \n"
+
+        txt = txt+s
+    return txt
+
+    # txt = "Top 5 regioni per nuovi positivi:" \
+    # "-" + {}.format + " \n" +
+    # "-" + +" \n" +
+    # "-" + +" \n" +
+    # "-" + +" \n" +
+    # "-" + +" \n" +
 # figure = render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
 # buf = botTools.buf_image(figure)
 # img = Image.open(buf)
 # img.show()
+
+
+daily_data_rep = dbManager.get_last_report(db_connection.covid19DB)
+daily_data_rep_vaccini = dbManager.get_last_report_vaccine(db_connection.covid19DB)
+daily_report_figure = botTools.render_table_img(daily_data_rep)
+daily_top_region_pos_txt = botTools.format_text_top_5_reg_nuovi_pos(daily_top_region_pos)
+daily_report_figure_vaccini = botTools.render_bar_chart_vaccini(daily_data_rep_vaccini)
+
+
+users = [{'id':551420370}, {'id':551420370}, {'id':551420370}]
+
+# reportManager.report_multiprocessing(users,daily_top_region_pos_txt, daily_report_figure, daily_report_figure_vaccini, 'daily')
 
 db_connection.close

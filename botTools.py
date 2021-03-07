@@ -12,8 +12,8 @@ bot_token = secrets.bot_token
 ############ subscriptionManager elements ###############
 bot_message_welcome = """Benvenuto. Questo Bot ti notificherà ogni giorno automaticamente alle 19.10 sull'andamento nazionale dei
 dati sul Covid 19. Se non vuoi più ricevere notifiche digita */stop* o utilizza i comandi inline.
-Digita o utilizza i comandi inline /ultimoreportgiornaliero o /ultimoreportsettimanale per ricevere gli ultimi dati disponibili
-sull'andamento della Covid19, utilizza i comandi inline /andamentovaccinazioni e /anagraficavaccinazionisett per ricevere gli ultimi
+Digita o utilizza i comandi inline\n /ultimoreportgiornaliero o\n/ultimoreportsettimanale\n per ricevere gli ultimi dati disponibili
+sull'andamento della Covid19.\n Digita o utilizza i comandi inline\n /andamentovaccinazioni e\n /anagraficavaccinazionisett\n per ricevere gli ultimi
 dati disponibili sull'andamento delle vaccinazioni
 """
 
@@ -261,6 +261,17 @@ def render_bar_chart_anag_vaccini(data_dictionary):
                     va='bottom', fontsize=8, fontweight='bold')
 
     return fig
+
+def format_text_top_5_reg_nuovi_pos(data_dictionary):
+    txt = "Report giornaliero\nTop 5 regioni per nuovi positivi (perc. positività):\n"
+
+    for k in data_dictionary:
+
+        s =   "-" + data_dictionary[k]['denom'] + ' '+ str(data_dictionary[k]['nuovi_positivi'])+ \
+             ' '+'({:.1%})'.format(data_dictionary[k]['perc_positivita'])+ " \n"
+
+        txt = txt+s
+    return txt
 
 def get_time():
     # restituisce ore e minuti

@@ -2,6 +2,8 @@ import dbManager
 import datetime
 import botTools
 import requests
+import operator
+import collections
 import multiprocessing
 
 ############################################# FUNZIONAMENTO ###########################################################
@@ -17,9 +19,11 @@ import multiprocessing
 db_connection = dbManager.mongodb_connection().covid19DB
 
 bot_token = botTools.bot_token
-regioni = ['Abruzzo','Basilicata','Calabria','Campania','Emilia-Romagna','Friuli-Venezia Giulia',
-           'Lazio','Liguria','Lombardia','Marche','Molise','Provincia Autonoma Bolzano','Provincia Autonoma Trento',
-           'Piemonte','Puglia','Sardegna','Sicilia','Toscana','Umbria',"Valle d'Aosta",'Veneto']
+regioni = {'Abruzzo':'abruzzo','Basilicata':'basilicata','Calabria':'calabria','Campania':'campania',
+           'Emilia-Romagna':'emiliaromagna','Friuli-Venezia Giulia':'friulivg', 'Lazio':'lazio','Liguria':'liguria',
+           'Lombardia':'lombardia','Marche':'marche','Molise':'molise','Provincia Autonoma Bolzano':'pabolzano',
+           'Provincia Autonoma Trento':'patrento', 'Piemonte':'piemonte','Puglia':'puglia','Sardegna':'sardegna',
+           'Sicilia':'sicilia','Toscana':'toscana','Umbria':'umbria' ,"Valle d'Aosta":'vaosta','Veneto':'veneto'}
 
 ##################### Richiesta dati per report Covid giornaliero e settimanale al DB ###############
 def daily_national_data_report():
@@ -182,6 +186,39 @@ def daily_national_data_vaccine_report():
 
     return report_data
 
+def daily_top_region_nuovi_pos():
+    today_date = datetime.date.today()
+    yesterday_date = today_date - datetime.timedelta(1)
+
+    today = int(today_date.strftime("%Y%m%d"))
+    yesterday = int(yesterday_date.strftime("%Y%m%d"))
+
+    perc_pos_regioni = {}
+    nuovi_pos_regione = {}
+
+
+    for k in regioni:
+        andamento_regione_oggi = db_connection['andamento_'+regioni[k]].find_one({'date': {'$eq': today}})
+        andamento_regione_ieri = db_connection['andamento_' + regioni[k]].find_one({'date': {'$eq': yesterday}})
+
+        if andamento_regione_ieri != None and andamento_regione_oggi!= None:
+            diff_tamponi = int(andamento_regione_oggi['tamponi']) - int(andamento_regione_ieri['tamponi'])
+
+            perc_pos_regioni[regioni[k]] = {'den': k, 'perc_pos':round(100*(int(andamento_regione_oggi['nuovi_positivi'])/diff_tamponi),3)}
+
+            nuovi_pos_regione[regioni[k]] = int(andamento_regione_oggi['nuovi_positivi'])
+
+
+    top_5_regioni = collections.Counter(nuovi_pos_regione).most_common(5)
+    top_5_regioni_dict = {}
+
+    for el in top_5_regioni:
+        top_5_regioni_dict[el[0]] = {'denom': perc_pos_regioni[el[0]]['den'],'nuovi_positivi': el[1],
+                                     'perc_positivita':perc_pos_regioni[el[0]]['perc_pos']/100}
+
+    db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'top_5_reg_perc_pos': top_5_regioni_dict}})
+    return top_5_regioni_dict
+
 
 ###########################################################################################################à
 
@@ -189,14 +226,14 @@ def daily_national_data_vaccine_report():
 def report_users_images(user_id, text, img_message):
 
         #avviso prima che sto mandando l'immagine del report settimanale
-        URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
-                            + str(user_id) + \
-                            '&parse_mode=Markdown&text='+ text
-        requests.get(URL_text_Messages)
+        # URL_text_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+        #                     + str(user_id) + \
+        #                     '&parse_mode=Markdown&text='+ text
+        # requests.get(URL_text_Messages)
 
         URL_img_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendPhoto?chat_id=' \
                            + str(user_id)
-        r = requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo'})
+        r = requests.post(URL_img_Messages, files={'photo': img_message}, data={'document': 'photo', 'caption':text})
         print(r.text)
 
         return '200 OK'
@@ -211,13 +248,10 @@ def report_users_images(user_id, text, img_message):
 ###### non di tutte e 20 le regioni (21 perché trentino alto adige è patrenot+pabolzano)
 
 
-#txt = daily_national_data_report()
-#img = render_image(WM_national_data_report())
-
-def enqueue_process_day(user, figure, figure_vaccine):
+def enqueue_process_day(user, txt, figure, figure_vaccine):
 
     daily_report_image_buf = botTools.buf_image(figure)  # bufferizzo e mando
-    report_users_images(str(user), 'Report giornaliero', daily_report_image_buf)
+    report_users_images(str(user), txt, daily_report_image_buf)
 
     daily_report_image_vaccine_buf = botTools.buf_image((figure_vaccine))
     report_users_images(str(user),'Andamento vaccinazioni', daily_report_image_vaccine_buf)
@@ -230,7 +264,7 @@ def enqueue_process_week(user, figure, figure_vaccine):
     weekly_report_image_anag_vaccini_buf = botTools.buf_image(figure_vaccine)
     report_users_images(str(user), 'Anagrafica vaccinazioni settimanale', weekly_report_image_anag_vaccini_buf)
 
-def report_multiprocessing(users, figure, figure_vaccine, type):
+def report_multiprocessing(users,txt, figure, figure_vaccine, type):
 # IMPLEMENTATO MULTI-PROCESSING PER L'INVIO DEI REPORT -> SCALATO DI 1/3 IL TEMPO DI PROCESSING
 # https://www.quantstart.com/articles/Parallelising-Python-with-Threading-and-Multiprocessing/
 
@@ -242,7 +276,9 @@ def report_multiprocessing(users, figure, figure_vaccine, type):
 
     jobs = []
     for u in users:
-        process = multiprocessing.Process(target=target, args=(u['id'], figure, figure_vaccine))
+        process = multiprocessing.Process(target=target,
+                                          args=(u['id'],
+                                                txt, figure, figure_vaccine))
         jobs.append(process)
 
     i = len(jobs)
