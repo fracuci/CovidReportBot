@@ -335,6 +335,9 @@ Saluti
 #                                           daily_report_figure_vaccini, 'daily')
 
 
-reportManager.report_multiprocessing(users_prod,'Report settimanale', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
+#reportManager.report_multiprocessing(users_prod,'Report settimanale', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
+
+weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
+print(weekly_anag_vaccini_rep)
 
 db_connection.close

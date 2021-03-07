@@ -203,3 +203,5 @@ def collect_anag_vaccine_data():
     db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'anag_vaccini': anag_vaccine_dict}})
 
     db_connection.close
+
+    return anag_vaccine_dict

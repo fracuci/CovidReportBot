@@ -15,6 +15,7 @@ daily_top_region_pos = dbManager.get_last_report_top_reg_nuovi_pos(db_connection
 weekly_data_rep = reportManager.weekly_national_data_report()
 weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection)
 
+
 while True:
 
     print("Controllo utenti...")
@@ -64,6 +65,7 @@ while True:
             #mando il messaggio con l'immagine a tutti gli utenti
             users = dbManager.get_all_users(db_connection)
             weekly_report_figure = botTools.render_image(weekly_data_rep)
+
             weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
 
             reportManager.report_multiprocessing(users,'Report settimanale', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')

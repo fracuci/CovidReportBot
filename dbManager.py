@@ -80,9 +80,9 @@ def get_last_report_vaccine(db_client_conn):
 
     return db_client_conn['last_report'].find_one({'id': 'last_report'})['data_vaccini']
 
-def get_last_report_anag_vaccini(dbclient_conn):
+def get_last_report_anag_vaccini(db_client_conn):
 
-    return dbclient_conn['last_report'].find_one({'id': 'last_report'})['anag_vaccini']
+    return db_client_conn['last_report'].find_one({'id': 'last_report'})['anag_vaccini']
 
 def get_last_report_top_reg_nuovi_pos(dbclient_conn):
 
