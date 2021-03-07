@@ -256,7 +256,7 @@ def enqueue_process_day(user, txt, figure, figure_vaccine):
     daily_report_image_vaccine_buf = botTools.buf_image((figure_vaccine))
     report_users_images(str(user),'Andamento vaccinazioni', daily_report_image_vaccine_buf)
 
-def enqueue_process_week(user, figure, figure_vaccine):
+def enqueue_process_week(user,txt, figure, figure_vaccine):
 
     weekly_report_image_buf = botTools.buf_image(figure)
     report_users_images(str(user), 'Report settimanale', weekly_report_image_buf)

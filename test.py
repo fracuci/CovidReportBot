@@ -292,9 +292,49 @@ daily_report_figure = botTools.render_table_img(daily_data_rep)
 daily_top_region_pos_txt = botTools.format_text_top_5_reg_nuovi_pos(daily_top_region_pos)
 daily_report_figure_vaccini = botTools.render_bar_chart_vaccini(daily_data_rep_vaccini)
 
+weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
+weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
+weekly_data_rep = reportManager.weekly_national_data_report()
+weekly_report_figure = botTools.render_image(weekly_data_rep)
 
-users = [{'id':551420370}, {'id':551420370}, {'id':551420370}]
+users_test = [{'id':551420370}]
+users_prod = dbManager.get_all_users(db_connection.covid19DB)
+bot_message_update = """
+*Aggiornamento Bot:*\n- Da oggi verrà inviato anche il grafico giornaliero sulle vaccinazioni\ne il grafico settimanale che riporta l'andamento delle vaccinazioni per fasce d'età anagrafica\n
+E' possibile ricevere questi report anche on demand tramite i comandi inline \n
+/andamentovaccinazioni e\n
+/anagraficavaccinazionisett\n
+- E' stata migliorata la modalità di invio messaggi push e le informazioni contenute in essi\n
+Ricordo che è possibile disabilitare i messaggi push dal comando inline\n
+/stop\n
+continuando comunque ad utilizzare il bot tramite richieste on demand con i suddetti comandi\n
 
-# reportManager.report_multiprocessing(users,daily_top_region_pos_txt, daily_report_figure, daily_report_figure_vaccini, 'daily')
+Seguono esempi di grafici disponibili (dati in aggiornamento)\n
+Saluti 
+"""
+
+
+# for u in users_test:
+#     #print(u, u['id'])
+#     URL_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+#                                        + str(u['id']) + \
+#                                        '&parse_mode=Markdown&text=' + bot_message_update
+#     r = requests.get(URL_Messages)
+#     print(r)
+
+
+
+# for u in users_prod:
+#     URL_Messages = 'https://api.telegram.org/bot' + botTools.bot_token + '/sendMessage?chat_id=' \
+#                                        + str(u['id']) + \
+#                                        '&parse_mode=Markdown&text=' + bot_message_update
+#     r = requests.get(URL_Messages)
+#     print(r)
+
+# reportManager.report_multiprocessing(users_prod, daily_top_region_pos_txt, daily_report_figure,
+#                                           daily_report_figure_vaccini, 'daily')
+
+
+reportManager.report_multiprocessing(users_prod,'Report settimanale', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
 
 db_connection.close

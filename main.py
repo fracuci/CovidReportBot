@@ -66,7 +66,7 @@ while True:
             weekly_report_figure = botTools.render_image(weekly_data_rep)
             weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
 
-            reportManager.report_multiprocessing(users, weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
+            reportManager.report_multiprocessing(users,'Report settimanale', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
 
             time.sleep(60) # FINISCO IL MINUTO DI AGGIORNAMENTO E FACCIO COOL DOWN DEI PROCESSI
 
