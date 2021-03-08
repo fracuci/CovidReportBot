@@ -42,6 +42,7 @@ while True:
         # dati per report andamento vaccini
         daily_data_rep_vaccini = reportManager.daily_national_data_vaccine_report()
         daily_top_region_pos = reportManager.daily_top_region_nuovi_pos()
+        weekly_anag_vaccini_rep = dataManager.collect_anag_vaccine_data()
 
         users = dbManager.get_all_users(db_connection)
         # immagine report andamento covid
@@ -59,8 +60,6 @@ while True:
         if datetime.datetime.today().weekday() == 6:  # controllo se è domenica
 
             weekly_data_rep = reportManager.weekly_national_data_report() # chiedo i dati settimanali
-            weekly_anag_vaccini_rep = dataManager.collect_anag_vaccine_data() #chiedo/aggiorno direttamente dati
-            #anagrafica vaccini
 
             #mando il messaggio con l'immagine a tutti gli utenti
             users = dbManager.get_all_users(db_connection)
