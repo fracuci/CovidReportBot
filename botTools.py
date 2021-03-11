@@ -6,6 +6,7 @@ import numpy as np
 import io
 import base64
 import datetime
+from matplotlib.font_manager import FontProperties
 #from PIL import Image ################ TEMPORANEO TOGLIERE!!!
 
 bot_token = secrets.bot_token
@@ -121,16 +122,16 @@ def render_table_img(data_dictionary):
     val2 = ["Ricoverati con sintomi", "Terapia intensiva", "Tot ospedalizzati", "Tot positivi",
             "Nuovi positivi", "Deceduti", "Tamponi", "Percentuale positività"]
 
-    lista = [[str(data_dictionary['ric_sint_oggi']), str(data_dictionary['ric_sint_ieri']),
-             str(data_dictionary['delta_ric_sint'])], [str(data_dictionary['terapia_int_oggi']),
-             str(data_dictionary['terapia_int_ieri']), str(data_dictionary['delta_terap_int'])],
-             [str(data_dictionary['tot_ospedal_oggi']), str(data_dictionary['tot_ospedal_ieri']),
-             str(data_dictionary['delta_ospedal'])], [str(data_dictionary['tot_positivi_oggi']),
-             str(data_dictionary['tot_positivi_ieri']), str(data_dictionary['delta_tot_positivi'])],
-             [str(data_dictionary['nuovi_positivi_oggi']), str(data_dictionary['nuovi_positivi_ieri']),
-             str(data_dictionary['delta_nuovi_positivi'])], [str(data_dictionary['deceduti_oggi']),
-             str(data_dictionary['deceduti_ieri']), str(data_dictionary['delta_deceduti'])],
-             [str(data_dictionary['tamponi_oggi']), " ", " "],[str(data_dictionary['perc_positivita_oggi']), " ", " "]]
+    lista = [['{:,}'.format(data_dictionary['ric_sint_oggi']), '{:,}'.format(data_dictionary['ric_sint_ieri']),
+             '{:,}'.format(data_dictionary['delta_ric_sint'])], ['{:,}'.format(data_dictionary['terapia_int_oggi']),
+             '{:,}'.format(data_dictionary['terapia_int_ieri']), '{:,}'.format(data_dictionary['delta_terap_int'])],
+             ['{:,}'.format(data_dictionary['tot_ospedal_oggi']), '{:,}'.format(data_dictionary['tot_ospedal_ieri']),
+             '{:,}'.format(data_dictionary['delta_ospedal'])], ['{:,}'.format(data_dictionary['tot_positivi_oggi']),
+             '{:,}'.format(data_dictionary['tot_positivi_ieri']), '{:,}'.format(data_dictionary['delta_tot_positivi'])],
+             ['{:,}'.format(data_dictionary['nuovi_positivi_oggi']), '{:,}'.format(data_dictionary['nuovi_positivi_ieri']),
+             '{:,}'.format(data_dictionary['delta_nuovi_positivi'])], ['{:,}'.format(data_dictionary['deceduti_oggi']),
+             '{:,}'.format(data_dictionary['deceduti_ieri']), '{:,}'.format(data_dictionary['delta_deceduti'])],
+             ['{:,}'.format(data_dictionary['tamponi_oggi']), " ", " "],['{:.2%}'.format(data_dictionary['perc_positivita_oggi']/100), " ", " "]]
 
     fig, ax = plt.subplots()
 
@@ -140,17 +141,29 @@ def render_table_img(data_dictionary):
                          colLabels=val1,
                          loc='center')
 
-    table[(1, -1)].set_facecolor("#ffff00")
-    table[(2, -1)].set_facecolor("#ffff00")
-    table[(3, -1)].set_facecolor("#ffff00")
-    table[(4, -1)].set_facecolor("#ffff00")
-    table[(5, -1)].set_facecolor("#ffff00")
-    table[(6, -1)].set_facecolor("#ffff00")
-    table[(7, -1)].set_facecolor("#ffff00")
-    table[(8, -1)].set_facecolor("#ffff00")
-    table[(0, 0)].set_facecolor("#00FFFF")
-    table[(0, 1)].set_facecolor("#00FFFF")
-    table[(0, 2)].set_facecolor("#00FFFF")
+    for i in range(1,9):
+
+        table[(i, -1)].set_facecolor("#ffff00")
+        table[(i, -1)].set_text_props(fontproperties=FontProperties(weight='bold'))
+
+    for i in range(1,9):
+        for j in range(0, 3):
+            table[(i, j)].set_text_props(fontproperties=FontProperties(weight='bold'))
+
+    # table[(2, -1)].set_facecolor("#ffff00")
+    # table[(3, -1)].set_facecolor("#ffff00")
+    # table[(4, -1)].set_facecolor("#ffff00")
+    # table[(5, -1)].set_facecolor("#ffff00")
+    # table[(6, -1)].set_facecolor("#ffff00")
+    # table[(7, -1)].set_facecolor("#ffff00")
+    # table[(8, -1)].set_facecolor("#ffff00")
+
+    for i in range(0, 3):
+        table[(0, i)].set_facecolor("cyan") #("lightskyblue")
+        table[(0, i)].set_text_props(fontproperties=FontProperties(weight='bold'))
+
+    # table[(0, 1)].set_facecolor("#00FFFF")
+    # table[(0, 2)].set_facecolor("#00FFFF")
 
     ax.set_xticks([])
 
@@ -163,7 +176,7 @@ def render_table_img(data_dictionary):
     plt.box(on=None)
     table.scale(1.2,2)
     pos = ax.get_position()
-    pos.x0 = 0.35  # for example 0.2, choose your value
+    pos.x0 = 0.40  # for example 0.2, choose your value
     ax.set_position(pos)
     #fig.tight_layout()
     # buf = io.BytesIO()
@@ -186,11 +199,11 @@ def render_bar_chart_vaccini(data_dictionary):
     ax.bar(x + width/2,dosi_cons, width, label='Dosi consegnate')
     ax.axhline(y= dosi_somm[1], xmax = 1, linestyle ='--')
     ax.axhline(y= dosi_cons[1], xmax = 1, color= 'orange', linestyle ='--')
-    ax.annotate('{0} (+ {1})'.format(dosi_somm[1], dosi_somm[1] - dosi_somm[0]),
+    ax.annotate('{0:,} (+ {1:,})'.format(dosi_somm[1], dosi_somm[1] - dosi_somm[0]),
                 xy=(0.5, dosi_somm[1]), xytext=(0,3),
                 textcoords="offset points",
                 ha='center', va='bottom')
-    ax.annotate('{0} (+ {1})'.format(dosi_cons[1], dosi_cons[1] - dosi_cons[0]),
+    ax.annotate('{0:,} (+ {1:,})'.format(dosi_cons[1], dosi_cons[1] - dosi_cons[0]),
                 xy=(0.5, dosi_cons[1]), xytext=(0, 1),
                 textcoords="offset points",
                 ha='center', va='bottom')
