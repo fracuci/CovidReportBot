@@ -286,14 +286,14 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 # img.show()
 
 
-daily_data_rep = dbManager.get_last_report(db_connection.covid19DB)
+#daily_data_rep = dbManager.get_last_report(db_connection.covid19DB)
 # daily_data_rep_vaccini = dbManager.get_last_report_vaccine(db_connection.covid19DB)
-daily_report_figure = botTools.render_table_img(daily_data_rep)
+#daily_report_figure = botTools.render_table_img(daily_data_rep)
 # daily_top_region_pos_txt = botTools.format_text_top_5_reg_nuovi_pos(daily_top_region_pos)
 # daily_report_figure_vaccini = botTools.render_bar_chart_vaccini(daily_data_rep_vaccini)
 #
-# weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
-# weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
+weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
+weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
 # weekly_data_rep = reportManager.weekly_national_data_report()
 # weekly_report_figure = botTools.render_image(weekly_data_rep)
 #
@@ -344,7 +344,7 @@ daily_report_figure = botTools.render_table_img(daily_data_rep)
 
 
 
-buf = botTools.buf_image(daily_report_figure)
+buf = botTools.buf_image(weekly_anag_vaccini_report_figure)
 img = Image.open(buf)
 img.show()
 

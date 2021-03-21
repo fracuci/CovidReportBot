@@ -261,17 +261,34 @@ def render_bar_chart_anag_vaccini(data_dictionary):
     for i in range(0, len(p_d)):
         height_el_p_d = p_d[i].get_height()
         height_el_s_d = s_d[i].get_height()
-        ax.annotate('{:.1f}K'.format(height_el_p_d/1000), xy=(p_d[i].get_x() + p_d[i].get_width()/2,
+
+        if height_el_p_d > 1000000:
+            ax.annotate('{:.1f}M'.format(height_el_p_d/1000000), xy=(p_d[i].get_x() + p_d[i].get_width()/2,
                     height_el_p_d/2), xytext=(0, 0), textcoords="offset points", ha='center',
                     va='bottom', fontsize=8, fontweight='bold')
+        else:
+            ax.annotate('{:.1f}K'.format(height_el_p_d / 1000), xy=(p_d[i].get_x() + p_d[i].get_width() / 2,
+                        height_el_p_d / 2), xytext=(0, 0), textcoords="offset points", ha='center',
+                        va='bottom', fontsize=8, fontweight='bold')
 
-        ax.annotate('{:.1f}K'.format(height_el_s_d/1000), xy=(s_d[i].get_x() + s_d[i].get_width()/2,
+        if height_el_s_d > 1000000:
+            ax.annotate('{:.1f}M'.format(height_el_s_d/1000000), xy=(s_d[i].get_x() + s_d[i].get_width()/2,
+                    height_el_s_d/2.3 + height_el_p_d), xytext=(0, 0), textcoords="offset points", ha='center',
+                    va='bottom', fontsize=8, fontweight='bold')
+        else:
+            ax.annotate('{:.1f}K'.format(height_el_s_d/1000), xy=(s_d[i].get_x() + s_d[i].get_width()/2,
                     height_el_s_d/2.3 + height_el_p_d), xytext=(0, 0), textcoords="offset points", ha='center',
                     va='bottom', fontsize=8, fontweight='bold')
 
-        ax.annotate('{:.1f}K'.format(totali[i] / 1000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
+        if totali[i] > 1000000:
+            ax.annotate('{:.1f}M'.format(totali[i] / 1000000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
                     height_el_s_d + height_el_p_d + 10000), xytext=(0, 0), textcoords="offset points", ha='center',
                     va='bottom', fontsize=8, fontweight='bold')
+        else:
+            ax.annotate('{:.1f}K'.format(totali[i] / 1000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
+                                                                height_el_s_d + height_el_p_d + 10000), xytext=(0, 0),
+                        textcoords="offset points", ha='center',
+                        va='bottom', fontsize=8, fontweight='bold')
 
     return fig
 
