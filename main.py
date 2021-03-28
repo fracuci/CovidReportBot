@@ -26,7 +26,7 @@ while True:
     # ############# DEVO CONSIDERARE CHE IL TIME DEL BOT È AVANTI DI UN'ORA (NON SO SE SIA
     # ############# IN UTC, ECT O GMT ##############################
     hh, mm, ss = botTools.get_time()
-    if hh == 17 and mm == 45 and (ss > 10 and ss < 55):
+    if hh == 16 and mm == 45 and (ss > 10 and ss < 55):
         print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
         dataManager.collect_data()
         dataManager.collect_vaccine_data()
@@ -34,7 +34,7 @@ while True:
         time.sleep(60) # COOL DOWN PER LE CONNESSIONI AL DB
 
     hh, mm, ss = botTools.get_time()
-    if hh == 18 and mm == 10 and (ss > 10 and ss < 55):
+    if hh == 17 and mm == 10 and (ss > 10 and ss < 55):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         # dati per report andamento covid
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero
