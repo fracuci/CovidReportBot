@@ -156,7 +156,7 @@ def buf_image(figure):
 # else:
 #     print('non ce')
 
-print(datetime.datetime.today().weekday())
+# print(datetime.datetime.today().weekday())
 
 
 
@@ -165,10 +165,10 @@ print(datetime.datetime.today().weekday())
 #dataManager.collect_anag_vaccine_data()
 
 # daily_data_rep_vaccini = dbManager.get_last_report_vaccine(db_connection.covid19DB)
-weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
-print(weekly_anag_vaccini_rep)
-
-daily_top_region_pos = dbManager.get_last_report_top_reg_nuovi_pos(db_connection.covid19DB)
+# weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
+# print(weekly_anag_vaccini_rep)
+#
+# daily_top_region_pos = dbManager.get_last_report_top_reg_nuovi_pos(db_connection.covid19DB)
 
 def render_bar_chart_vaccini(data_dictionary):
 
@@ -292,8 +292,8 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 # daily_top_region_pos_txt = botTools.format_text_top_5_reg_nuovi_pos(daily_top_region_pos)
 # daily_report_figure_vaccini = botTools.render_bar_chart_vaccini(daily_data_rep_vaccini)
 #
-weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
-weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
+# weekly_anag_vaccini_rep = dbManager.get_last_report_anag_vaccini(db_connection.covid19DB)
+# weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
 # weekly_data_rep = reportManager.weekly_national_data_report()
 # weekly_report_figure = botTools.render_image(weekly_data_rep)
 #
@@ -344,9 +344,10 @@ weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekl
 
 
 
-buf = botTools.buf_image(weekly_anag_vaccini_report_figure)
-img = Image.open(buf)
-img.show()
+# buf = botTools.buf_image(weekly_anag_vaccini_report_figure)
+# img = Image.open(buf)
+# img.show()
 
 
 db_connection.close
+
