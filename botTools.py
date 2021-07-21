@@ -7,7 +7,7 @@ import io
 import base64
 import datetime
 from matplotlib.font_manager import FontProperties
-#from PIL import Image ################ TEMPORANEO TOGLIERE!!!
+from PIL import Image #commentare alla fine del test locale
 
 bot_token = secrets.bot_token
 ############ subscriptionManager elements ###############
@@ -69,12 +69,13 @@ def format_message(data_dictionary):
 #     #img = Image.open(buf, mode='r')
 #     return buf #img.show()#buf
 
-def render_image(data):
+def render_image(data_positivi):
     fig, axs = plt.subplots(3)
 
     formatter = mdates.DateFormatter("%m/%d")
     locator = mdates.DayLocator()
 
+    ##### grafico Ricoverati con sintomi ##########à
     color = 'tab:orange'
     axs[0].xaxis.set_major_formatter(formatter)
     axs[0].xaxis.set_major_locator(locator)
@@ -82,9 +83,10 @@ def render_image(data):
     axs[0].tick_params(axis='y', labelcolor=color)
     axs[0].tick_params(axis='x', rotation=45)
     axs[0].grid(color='b', ls='-.', lw=0.25)
-    axs[0].plot(data['dates'], data['rc_sint'], color= color)
+    axs[0].plot(data_positivi['dates'], data_positivi['rc_sint'], color= color)
     plt.setp(axs[0].get_xticklabels(), visible=False)
 
+    ##### grafico Ricoverati terapia intensiva ##########à
     axs[1].xaxis.set_major_formatter(formatter)
     axs[1].xaxis.set_major_locator(locator)
     color = 'tab:red'
@@ -92,9 +94,10 @@ def render_image(data):
     axs[1].tick_params(axis='y', labelcolor=color)
     axs[1].tick_params(axis='x', rotation=45)
     axs[1].grid(color='b', ls='-.', lw=0.25)
-    axs[1].plot(data['dates'], data['ti'], color= color)
+    axs[1].plot(data_positivi['dates'], data_positivi['ti'], color= color)
     plt.setp(axs[1].get_xticklabels(), visible=False)
 
+    ##### grafico Nuovi positivi##########à
     axs[2].xaxis.set_major_formatter(formatter)
     axs[2].xaxis.set_major_locator(locator)
     color = 'tab:blue'
@@ -102,14 +105,15 @@ def render_image(data):
     axs[2].tick_params(axis='y', labelcolor=color)
     axs[2].tick_params(axis='x', rotation=45)
     axs[2].grid(color='b', ls='-.', lw=0.25)
-    axs[2].plot(data['dates'], data['np'], color= color)
+    axs[2].plot(data_positivi['dates'], data_positivi['np'], color= color)
 
     fig.tight_layout()
-    # buf = io.BytesIO()
-    # fig.savefig(buf)
-    # buf.seek(0)
-    #img = Image.open(buf, mode='r')
-    return fig #buf #img.show()#buf
+    #buf = io.BytesIO() #commentare alla fine del test locale
+    #fig.savefig(buf)  #commentare alla fine del test locale
+    #buf.seek(0) #commentare alla fine del test locale
+    #img = Image.open(buf, mode='r') #commentare alla fine del test locale
+    return fig
+    #img.show() #commentare alla fine del test locale
 
 def buf_image(figure):
     buf = io.BytesIO()
@@ -222,7 +226,12 @@ def render_bar_chart_vaccini(data_dictionary):
                #loc='lower center',
                bbox_to_anchor=(0.5, 0.5, 0.0, 0.0), fontsize='small')
 
+    #buf = io.BytesIO() #commentare alla fine del test locale
+    #fig.savefig(buf)  #commentare alla fine del test locale
+    #buf.seek(0) #commentare alla fine del test locale
+    #img = Image.open(buf, mode='r') #commentare alla fine del test locale
     return fig
+    #img.show() #commentare alla fine del test locale
 
 def render_bar_chart_anag_vaccini(data_dictionary):
 
@@ -292,8 +301,8 @@ def render_bar_chart_anag_vaccini(data_dictionary):
 
     return fig
 
-def format_text_top_5_reg_nuovi_pos(data_dictionary):
-    txt = "Report giornaliero\nTop 5 regioni per nuovi positivi (perc. positività):\n"
+def format_text_top_reg_nuovi_pos(data_dictionary):
+    txt = "Report giornaliero\nTop regioni per nuovi positivi (perc. positività):\n"
 
     for k in data_dictionary:
 

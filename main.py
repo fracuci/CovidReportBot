@@ -30,7 +30,8 @@ while True:
         print("Sono le "+str(hh)+":"+str(mm)+" .Controllo e aggiorno i dati sul database")
         dataManager.collect_data()
         dataManager.collect_vaccine_data()
-        # dataManager.collect_anag_vaccine_data()
+        weekly_anag_vaccini_rep = dataManager.collect_anag_vaccine_data()
+
         time.sleep(60) # COOL DOWN PER LE CONNESSIONI AL DB
 
     hh, mm, ss = botTools.get_time()
@@ -42,7 +43,7 @@ while True:
         # dati per report andamento vaccini
         daily_data_rep_vaccini = reportManager.daily_national_data_vaccine_report()
         daily_top_region_pos = reportManager.daily_top_region_nuovi_pos()
-        weekly_anag_vaccini_rep = dataManager.collect_anag_vaccine_data()
+
 
         users = dbManager.get_all_users(db_connection)
         # immagine report andamento covid
@@ -50,7 +51,7 @@ while True:
         # immagine report andamento vaccini
         daily_report_figure_vaccini = botTools.render_bar_chart_vaccini(daily_data_rep_vaccini)
         # testo top 5 regioni a maggiore incremento nuovi positivi (perc-positività)
-        daily_top_region_pos_txt = botTools.format_text_top_5_reg_nuovi_pos(daily_top_region_pos)
+        daily_top_region_pos_txt = botTools.format_text_top_reg_nuovi_pos(daily_top_region_pos)
 
         # multi_processing immagini
         reportManager.report_multiprocessing(users,daily_top_region_pos_txt, daily_report_figure, daily_report_figure_vaccini, 'daily')
@@ -67,7 +68,7 @@ while True:
 
             weekly_anag_vaccini_report_figure = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
 
-            reportManager.report_multiprocessing(users,'Report settimanale', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
+            reportManager.report_multiprocessing(users,'Report settimanale a 21 giorni', weekly_report_figure, weekly_anag_vaccini_report_figure, 'weekly')
 
             time.sleep(60) # FINISCO IL MINUTO DI AGGIORNAMENTO E FACCIO COOL DOWN DEI PROCESSI
 

@@ -18,7 +18,7 @@ regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friuliv
            'piemonte','puglia','sardegna','sicilia','toscana','umbria','vaosta','veneto']
 
 #
-db_connection =dbManager.mongodb_connection()
+db_connection = dbManager.mongodb_connection().covid19DB
 #
 user = '551420370'
 text = """ Fixato bug sull'aggiornamento della data
@@ -349,5 +349,24 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 # img.show()
 
 
-db_connection.close
+###################à Eliminare record spurii ##############
+# i = db_connection.list_collection_names()
+#
+# for el in i:
+#     if 'andamento' in el:
+#         if db_connection[el].find_one({'date': 20210720}) is not None:
+#             print(db_connection[el].find_one({'date': 20210720}))
+#             db_connection[el].delete_one({'date': 20210720})
+#             print('eliminato')
+#             print(db_connection[el].find_one({'date': 20210720}))
+####################################################################
 
+#d = dataManager.collect_data()
+
+#c = reportManager.daily_top_region_nuovi_pos()
+
+#print(d)
+
+d = reportManager.count_vaccinati()
+
+print(d)

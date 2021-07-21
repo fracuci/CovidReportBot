@@ -94,7 +94,7 @@ def process_request(data, daily_data_rep, weekly_data_rep, daily_vaccine_data_re
                 if txt == '/ultimoreportsettimanale':
                     weekly_report_figure = botTools.render_image(weekly_data_rep)
                     weekly_report_image_buf = botTools.buf_image(weekly_report_figure)
-                    reportManager.report_users_images(from_id, 'Ultimi dati settimanali', weekly_report_image_buf)
+                    reportManager.report_users_images(from_id, 'Ultimi dati settimanali a 21 giorni ', weekly_report_image_buf)
 
                 if txt == '/anagraficavaccinazionisett':
                     weekly_report_figure_vaccine = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)

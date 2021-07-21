@@ -68,7 +68,12 @@ def daily_national_data_report():
 
     report_data['tamponi_oggi'] = int(today_query['tamponi']) - int(yesterday_query['tamponi'])
 
-    report_data['perc_positivita_oggi'] = round(100*(report_data['nuovi_positivi_oggi']/report_data['tamponi_oggi']), 3)
+    try:
+        report_data['perc_positivita_oggi'] = round(100*(report_data['nuovi_positivi_oggi']/report_data['tamponi_oggi']), 3)
+
+    except Exception as e:
+
+        report_data['perc_positivita_oggi'] = 0
 
     # text_message = botTools.format_message(report_data)
     #
@@ -83,7 +88,7 @@ def weekly_national_data_report():
     today_date = datetime.date.today() - datetime.timedelta(1)
     # restituisce i dati dell'ultima settimana da plottare
     today = int(today_date.strftime("%Y%m%d"))
-    l_week_date = today_date - datetime.timedelta(7) #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
+    l_week_date = today_date - datetime.timedelta(21) #int(date.strftime("%Y%m%d")) - 7  # ultima settimana
     l_week = int(l_week_date.strftime("%Y%m%d"))
 
     lweek_query = db_connection.andamento_nazionale.find({'date': {'$gte': l_week,'$lte': today}})
@@ -179,7 +184,12 @@ def daily_national_data_vaccine_report():
     report_data['dosi_naz_cons_ieri'] = int(yesterday_query['Italia']['dosi_consegnate'])
     report_data['delta_dosi_naz_cons'] = report_data['dosi_naz_cons_oggi'] - report_data['dosi_naz_cons_ieri']
 
-    report_data['perc_somm'] = round(report_data['dosi_naz_somm_oggi'] / report_data['dosi_naz_cons_oggi'], 3)*100
+    try:
+        report_data['perc_somm'] = round(report_data['dosi_naz_somm_oggi'] / report_data['dosi_naz_cons_oggi'], 3)*100
+
+    except Exception as e:
+
+        report_data['perc_somm'] = 0
 
 
     db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'data_vaccini': report_data}})
@@ -204,21 +214,44 @@ def daily_top_region_nuovi_pos():
         if andamento_regione_ieri != None and andamento_regione_oggi!= None:
             diff_tamponi = int(andamento_regione_oggi['tamponi']) - int(andamento_regione_ieri['tamponi'])
 
-            perc_pos_regioni[regioni[k]] = {'den': k, 'perc_pos':round(100*(int(andamento_regione_oggi['nuovi_positivi'])/diff_tamponi),3)}
+            try:
+                perc_pos_regioni[regioni[k]] = {'den': k, 'perc_pos':round(100*(int(andamento_regione_oggi['nuovi_positivi'])/diff_tamponi),3)}
+            except Exception as e:
+                perc_pos_regioni[regioni[k]] = {'den': k, 'perc_pos': 0}
 
             nuovi_pos_regione[regioni[k]] = int(andamento_regione_oggi['nuovi_positivi'])
 
 
-    top_5_regioni = collections.Counter(nuovi_pos_regione).most_common(5)
-    top_5_regioni_dict = {}
+    top_regioni = collections.Counter(nuovi_pos_regione).most_common(20)
+    top_regioni_dict = {}
 
-    for el in top_5_regioni:
-        top_5_regioni_dict[el[0]] = {'denom': perc_pos_regioni[el[0]]['den'],'nuovi_positivi': el[1],
+    for el in top_regioni:
+        top_regioni_dict[el[0]] = {'denom': perc_pos_regioni[el[0]]['den'],'nuovi_positivi': el[1],
                                      'perc_positivita':perc_pos_regioni[el[0]]['perc_pos']/100}
 
-    db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'top_5_reg_perc_pos': top_5_regioni_dict}})
-    return top_5_regioni_dict
+    db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'top_5_reg_perc_pos': top_regioni_dict}})
+    return top_regioni_dict
 
+
+def count_vaccinati():
+
+    today_date = datetime.date.today()
+    today = int(today_date.strftime("%Y%m%d"))
+
+    vaccinazioni_oggi = db_connection['last_report'].find_one({'id': 'last_report'})['anag_vaccini']
+    del vaccinazioni_oggi['last_update']
+
+    prima_dose = 0
+    seconda_dose = 0
+    tot = 0
+
+    for v in vaccinazioni_oggi:
+        prima_dose = prima_dose + int(vaccinazioni_oggi[v]['prima_dose'])
+        seconda_dose = seconda_dose +int(vaccinazioni_oggi[v]['seconda_dose'])
+        tot = tot + +int(vaccinazioni_oggi[v]['totale'])
+
+
+    return (prima_dose, seconda_dose, tot)
 
 ###########################################################################################################à
 
