@@ -1,3 +1,5 @@
 __pycache__/
 secrets.py
 .idea/
+venv/
+test.py

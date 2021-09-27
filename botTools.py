@@ -241,11 +241,15 @@ def render_bar_chart_anag_vaccini(data_dictionary):
 
     prime_dosi = []
     seconde_dosi = []
+    guariti = []
+    terze_dosi = []
     totali = []
 
     for ar in age_range:
         prime_dosi.append(int(data_dictionary[ar]['prima_dose']))
         seconde_dosi.append(int(data_dictionary[ar]['seconda_dose']))
+        guariti.append(int(data_dictionary[ar]['guariti']))
+        terze_dosi.append(int(data_dictionary[ar]['terza_dose']))
         totali.append(int(data_dictionary[ar]['totale']))
 
     width = 0.85  # the width of the bars
@@ -253,7 +257,9 @@ def render_bar_chart_anag_vaccini(data_dictionary):
 
     p_d = ax.bar(age_range, prime_dosi, width, label='Prime dosi', color='springgreen')
     s_d = ax.bar(age_range, seconde_dosi, width, bottom=prime_dosi,  label='Seconde dosi', color='seagreen')
-
+    t_d = ax.bar(age_range, terze_dosi, width, bottom=np.array(seconde_dosi) + np.array(prime_dosi), label='Terze dosi', color='darkolivegreen')
+    g = ax.bar(age_range, guariti, width, bottom=np.array(terze_dosi)+np.array(seconde_dosi)+np.array(prime_dosi), label='Guariti',
+               color='yellow')
 
     ax.set_ylabel('Conteggio')
     formatter = ticker.ScalarFormatter(useMathText=True)
@@ -270,6 +276,8 @@ def render_bar_chart_anag_vaccini(data_dictionary):
     for i in range(0, len(p_d)):
         height_el_p_d = p_d[i].get_height()
         height_el_s_d = s_d[i].get_height()
+        height_el_g = g[i].get_height()
+        height_el_t_d = t_d[i].get_height()
 
         if height_el_p_d > 1000000:
             ax.annotate('{:.1f}M'.format(height_el_p_d/1000000), xy=(p_d[i].get_x() + p_d[i].get_width()/2,
@@ -291,11 +299,11 @@ def render_bar_chart_anag_vaccini(data_dictionary):
 
         if totali[i] > 1000000:
             ax.annotate('{:.1f}M'.format(totali[i] / 1000000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
-                    height_el_s_d + height_el_p_d + 10000), xytext=(0, 0), textcoords="offset points", ha='center',
+                    height_el_s_d + height_el_p_d + height_el_g + height_el_t_d + 100000), xytext=(0, 0), textcoords="offset points", ha='center',
                     va='bottom', fontsize=8, fontweight='bold')
         else:
             ax.annotate('{:.1f}K'.format(totali[i] / 1000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
-                                                                height_el_s_d + height_el_p_d + 10000), xytext=(0, 0),
+                                                                height_el_s_d + height_el_p_d + height_el_g + height_el_t_d + 100000), xytext=(0, 0),
                         textcoords="offset points", ha='center',
                         va='bottom', fontsize=8, fontweight='bold')
 

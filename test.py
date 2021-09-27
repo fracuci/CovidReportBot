@@ -354,19 +354,33 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 #
 # for el in i:
 #     if 'andamento' in el:
-#         if db_connection[el].find_one({'date': 20210720}) is not None:
-#             print(db_connection[el].find_one({'date': 20210720}))
-#             db_connection[el].delete_one({'date': 20210720})
+#         if db_connection[el].find_one({'date': 20210802}) is not None:
+#             print(db_connection[el].find_one({'date': 20210802}))
+#             db_connection[el].delete_one({'date': 20210802})
 #             print('eliminato')
-#             print(db_connection[el].find_one({'date': 20210720}))
+#             print(db_connection[el].find_one({'date': 20210802}))
 ####################################################################
 
-#d = dataManager.collect_data()
+#dataManager.collect_data()
+#reportManager.daily_national_data_report()
 
-#c = reportManager.daily_top_region_nuovi_pos()
+
+#reportManager.daily_top_region_nuovi_pos()
+#reportManager.daily_national_data_vaccine_report()
+
 
 #print(d)
 
-d = reportManager.count_vaccinati()
+# d = reportManager.count_vaccinati()
+#
+# print(d)
 
-print(d)
+#
+# d = dataManager.collect_anag_vaccine_data()
+#
+# fig = botTools.render_bar_chart_anag_vaccini(d)
+#
+# buf = botTools.buf_image(fig)
+# img = Image.open(buf)
+# img.show()
+

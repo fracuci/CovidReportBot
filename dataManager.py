@@ -195,11 +195,12 @@ def collect_anag_vaccine_data():
 
     data_anag_vaccine.pop()
 
-    anag_vaccine_dict ={}
+    anag_vaccine_dict = {}
     last_update = datetime.date.today().strftime("%d-%m-%Y")
     anag_vaccine_dict['last_update'] = last_update
     for d in data_anag_vaccine:
-        anag_vaccine_dict[d[0]] = {'prima_dose': d[len(d)-4], 'seconda_dose': d[len(d)-3], 'totale':d[1]}
+        anag_vaccine_dict[d[0]] = {'prima_dose': d[len(d)-5], 'seconda_dose': d[len(d)-4], 'guariti': d[len(d)-3],
+                                   'terza_dose': d[len(d)-2], 'totale': d[1]}
 
     db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'anag_vaccini': anag_vaccine_dict}})
 
