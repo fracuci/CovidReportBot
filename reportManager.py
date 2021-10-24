@@ -298,7 +298,8 @@ def enqueue_process_week(user,txt, figure, figure_vaccine):
     report_users_images(str(user), 'Anagrafica vaccinazioni settimanale\n' +
     'Dose aggiuntiva: dopo 28gg dal completamento ciclo vaccinale\n'+
     'Dose booster: dose di richiamo dopo completamento ciclo vaccinale (terza dose)\n'+
-    'Pregressa infezione: diritto a GP per 6 mesi dalla guarigione da Covid 19'
+    'Pregressa infezione: diritto a GP per 6 mesi dalla guarigione da Covid 19\n' +
+    'fonte: ARS Regione Toscana https://www.ars.toscana.it'
     , weekly_report_image_anag_vaccini_buf)
 
 def report_multiprocessing(users,txt, figure, figure_vaccine, type):
