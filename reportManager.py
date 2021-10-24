@@ -295,7 +295,11 @@ def enqueue_process_week(user,txt, figure, figure_vaccine):
     report_users_images(str(user), 'Report settimanale', weekly_report_image_buf)
 
     weekly_report_image_anag_vaccini_buf = botTools.buf_image(figure_vaccine)
-    report_users_images(str(user), 'Anagrafica vaccinazioni settimanale', weekly_report_image_anag_vaccini_buf)
+    report_users_images(str(user), 'Anagrafica vaccinazioni settimanale\n' +
+    'Dose aggiuntiva: dopo 28gg dal completamento ciclo vaccinale\n'+
+    'Dose booster: dose di richiamo dopo completamento ciclo vaccinale (terza dose)\n'+
+    'Pregressa infezione: diritto a GP per 6 mesi dalla guarigione da Covid 19'
+    , weekly_report_image_anag_vaccini_buf)
 
 def report_multiprocessing(users,txt, figure, figure_vaccine, type):
 # IMPLEMENTATO MULTI-PROCESSING PER L'INVIO DEI REPORT -> SCALATO DI 1/3 IL TEMPO DI PROCESSING

@@ -351,14 +351,14 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 
 ###################à Eliminare record spurii ##############
 # i = db_connection.list_collection_names()
-#
+
 # for el in i:
 #     if 'andamento' in el:
-#         if db_connection[el].find_one({'date': 20210802}) is not None:
-#             print(db_connection[el].find_one({'date': 20210802}))
-#             db_connection[el].delete_one({'date': 20210802})
+#         if db_connection[el].find_one({'date': 20210930}) is not None:
+#             print(db_connection[el].find_one({'date': 20210930}))
+#             db_connection[el].delete_one({'date': 20210930})
 #             print('eliminato')
-#             print(db_connection[el].find_one({'date': 20210802}))
+#             print(db_connection[el].find_one({'date': 20210930}))
 ####################################################################
 
 #dataManager.collect_data()
@@ -376,11 +376,14 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 # print(d)
 
 #
-# d = dataManager.collect_anag_vaccine_data()
+d = dataManager.collect_anag_vaccine_data()
+
+print(d)
+
 #
-# fig = botTools.render_bar_chart_anag_vaccini(d)
+fig = botTools.render_bar_chart_anag_vaccini(d)
 #
-# buf = botTools.buf_image(fig)
-# img = Image.open(buf)
-# img.show()
+buf = botTools.buf_image(fig)
+img = Image.open(buf)
+img.show()
 
