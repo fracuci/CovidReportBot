@@ -192,18 +192,44 @@ def collect_anag_vaccine_data():
     r_anag_vaccine = requests.get(url=URL)
 
     data_anag_vaccine = str_to_list_vaccine(r_anag_vaccine.text)
-
     data_anag_vaccine.pop()
 
     anag_vaccine_dict = {}
     last_update = datetime.date.today().strftime("%d-%m-%Y")
     anag_vaccine_dict['last_update'] = last_update
     for d in data_anag_vaccine:
-        anag_vaccine_dict[d[0]] = {'prima_dose': d[len(d)-6], 'seconda_dose': d[len(d)-5], 'preg_infez': d[len(d)-4],
-                                   'dose_aggiuntiva': d[len(d)-3], 'dose_booster': d[len(d)-2], 'totale': d[1]}
+        anag_vaccine_dict[d[0]] = {'prima_dose': d[4], 'seconda_dose': d[5], 'preg_infez': d[6],
+                                   'dose_booster': d[7], 'totale': d[1]}
 
     db_connection['last_report'].update_one({'id': 'last_report'}, {'$set': {'anag_vaccini': anag_vaccine_dict}})
 
     db_connection.close
 
     return anag_vaccine_dict
+
+def collect_platea():
+
+    URL = 'https://raw.githubusercontent.com/italia/covid19-opendata-vaccini/master/dati/' \
+          'platea.csv'
+
+    r_platee = requests.get(url=URL)
+
+    platee = str_to_list_vaccine(r_platee.text)
+    platee.pop()
+
+    platea_dict ={}
+    last_update = datetime.date.today().strftime("%d-%m-%Y")
+    platea_dict['last_upadate'] = last_update
+    platea_nazionale = {'05-29': 0, '30-59': 0, '60+': 0}
+
+    for p in platee:
+        if p[2] in ('05-11', '12-19', '20-29'):
+            platea_nazionale['05-29'] += int(p[3])
+        elif p[2] in ('30-39', '40-49', '50-59'):
+            platea_nazionale['30-59'] += int(p[3])
+        else:
+            platea_nazionale['60+'] += int(p[3])
+
+    db_connection['platea_nazionale'].update_one({'id': 'last'}, {'$set': {'platea': platea_nazionale}})
+    return platea_nazionale
+

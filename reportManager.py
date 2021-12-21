@@ -5,6 +5,7 @@ import requests
 import operator
 import collections
 import multiprocessing
+import math
 
 ############################################# FUNZIONAMENTO ###########################################################
 # Per il messaggio di testo giornaliero deve esser prima chiamata la funz. daily_national_data_report per poi passare #
@@ -233,25 +234,79 @@ def daily_top_region_nuovi_pos():
     return top_regioni_dict
 
 
-def count_vaccinati():
+def count_vaccinazioni():
 
-    today_date = datetime.date.today()
-    today = int(today_date.strftime("%Y%m%d"))
+    rs = db_connection['last_report'].find_one({'id': 'last_report'})['anag_vaccini']
+    age_range = [k for k in rs]
+    age_range.pop(0)
 
-    vaccinazioni_oggi = db_connection['last_report'].find_one({'id': 'last_report'})['anag_vaccini']
-    del vaccinazioni_oggi['last_update']
+    vaccinazioni= {'05-29': {'seconda': 0, 'terza': 0}, '30-59': {'seconda': 0, 'terza': 0}
+                   ,'60+': {'seconda': 0, 'terza': 0}}
 
-    prima_dose = 0
-    seconda_dose = 0
-    tot = 0
+    for ar in age_range:
 
-    for v in vaccinazioni_oggi:
-        prima_dose = prima_dose + int(vaccinazioni_oggi[v]['prima_dose'])
-        seconda_dose = seconda_dose +int(vaccinazioni_oggi[v]['seconda_dose'])
-        tot = tot + +int(vaccinazioni_oggi[v]['totale'])
+        if ar in ('05-11', '12-19', '20-29'):
+            vaccinazioni['05-29']['seconda'] += int(rs[ar]['seconda_dose'])
+            vaccinazioni['05-29']['terza'] += int(rs[ar]['dose_booster'])
+        elif ar in ('30-39', '40-49', '50-59'):
+            vaccinazioni['30-59']['seconda'] += int(rs[ar]['seconda_dose'])
+            vaccinazioni['30-59']['terza'] += int(rs[ar]['dose_booster'])
+        else:
+            vaccinazioni['60+']['seconda'] += int(rs[ar]['seconda_dose'])
+            vaccinazioni['60+']['terza'] += int(rs[ar]['dose_booster'])
+
+    return vaccinazioni
 
 
-    return (prima_dose, seconda_dose, tot)
+def count_stats():
+
+    today = datetime.date.today() - datetime.timedelta(1)
+    yesterday = today - datetime.timedelta(1)
+    yesterday_date = int(yesterday.strftime('%Y%m%d'))
+    last_year = today - datetime.timedelta(365)
+    last_year_date = int(last_year.strftime('%d%m%Y'))
+
+    rs = list(db_connection['andamento_nazionale'].find({'date': { '$gt': last_year_date}}))
+    rs_vaccini = list(db_connection['vaccini'].find({'date': { '$gte': yesterday_date}}))
+    platea = db_connection['platea_nazionale'].find_one({'id': 'last'})['platea']
+
+    positivi= {}
+    perc_pos = {}
+    terap_intens = {}
+    deceduti = {}
+    vaccini_somministrati = int(rs_vaccini[1]['Italia']['dosi_somministrate']) - int(rs_vaccini[0]['Italia']['dosi_somministrate'])
+    vaccini_consegnati = int(rs_vaccini[1]['Italia']['dosi_consegnate']) - int(rs_vaccini[0]['Italia']['dosi_consegnate'])
+
+    vaccini = {'somministrati': vaccini_somministrati, 'consegnati': vaccini_consegnati}
+
+
+    for i in range(1, len(rs)):
+        positivi[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = int(rs[i]['nuovi_positivi'])
+        terap_intens[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = int(rs[i]['terapia_intensiva'])
+        try:
+            tamponi_i = int(rs[i]['tamponi'])
+            tamponi_i_meno_uno = int(rs[i-1]['tamponi'])
+            delta_tamponi = tamponi_i - tamponi_i_meno_uno
+
+            deceduti_i = int(rs[i]['deceduti'])
+            deceduti_i_meno_uno = int(rs[i-1]['deceduti'])
+            delta_deceduti = deceduti_i - deceduti_i_meno_uno
+
+            if delta_tamponi > 0:
+                perc_pos[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = (int(rs[i]['nuovi_positivi'])/delta_tamponi)*100
+            else:
+                perc_pos[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = 0
+
+            if delta_deceduti > 0:
+                deceduti[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = delta_deceduti
+            else:
+                deceduti[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = 0
+
+        except Exception:
+            perc_pos[datetime.datetime.strptime(str(rs[i]['date']), "%Y%m%d")] = 0
+
+    return (positivi, perc_pos, terap_intens, deceduti, vaccini, platea)
+
 
 ###########################################################################################################à
 
@@ -271,14 +326,6 @@ def report_users_images(user_id, text, img_message):
 
         return '200 OK'
 
-####################### DA VEDERE SE IN FUTURO SI POTRÀ SCRIVERE QUELLA PER LE REGIONI (SPERIAMO FINISCA #####
-###################### TUTTO PRIMA :( ########################################################################
-# def daily_regional_status():
-#
-#     for r in regioni:
-#         res = db['andamento_'+r].find_one({'date': {'$eq': date}})
-###### da studiare perché l'untente della regione x vorrà solo il report della regione x
-###### non di tutte e 20 le regioni (21 perché trentino alto adige è patrenot+pabolzano)
 
 
 def enqueue_process_day(user, txt, figure, figure_vaccine):
@@ -287,7 +334,7 @@ def enqueue_process_day(user, txt, figure, figure_vaccine):
     report_users_images(str(user), txt, daily_report_image_buf)
 
     daily_report_image_vaccine_buf = botTools.buf_image((figure_vaccine))
-    report_users_images(str(user),'Andamento vaccinazioni', daily_report_image_vaccine_buf)
+    report_users_images(str(user),'Statistiche ultimo anno e vaccinazioni', daily_report_image_vaccine_buf)
 
 def enqueue_process_week(user,txt, figure, figure_vaccine):
 

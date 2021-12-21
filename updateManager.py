@@ -18,7 +18,7 @@ def cache_update_request(request_data): #cache request in db if something went w
     return up
 
 
-def process_request(data, daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep, daily_top_region_pos):
+def process_request(data, daily_data_rep, weekly_data_rep, daily_data_stats, daily_data_vaccininazioni, weekly_anag_vaccini_rep, daily_top_region_pos):
 
     if len(data['result']) > 0:
 
@@ -48,14 +48,16 @@ def process_request(data, daily_data_rep, weekly_data_rep, daily_vaccine_data_re
                                        '&parse_mode=Markdown&text=' + bot_message_welcome
                         response = requests.get(URL_Messages)
 
-                        text = botTools.format_text_top_5_reg_nuovi_pos(daily_top_region_pos)
+                        text = botTools.format_text_top_reg_nuovi_pos(daily_top_region_pos)
                         daily_report_figure = botTools.render_table_img(daily_data_rep)
                         daily_report_image_buf = botTools.buf_image(daily_report_figure)
                         reportManager.report_users_images(from_id, text, daily_report_image_buf)
 
-                        daily_report_figure_vaccine = botTools.render_bar_chart_vaccini(daily_vaccine_data_rep)
-                        daily_report_image_vaccine_buf = botTools.buf_image(daily_report_figure_vaccine)
-                        reportManager.report_users_images(from_id,'Andamento vaccinazioni', daily_report_image_vaccine_buf)
+                        #daily_report_figure_vaccine = botTools.render_bar_chart_vaccini(daily_vaccine_data_rep)
+                        daily_report_figure_stats_vax = botTools.render_image_stats(daily_data_stats,
+                                                                                    daily_data_vaccininazioni)
+                        daily_report_image_stats_vax_buf = botTools.buf_image(daily_report_figure_stats_vax)
+                        reportManager.report_users_images(from_id,'Statistiche ultimo anno e vaccinazioni', daily_report_image_stats_vax_buf)
 
                         try:# actually.. with Telegram Server when response code is NOT 200..????
                             response.raise_for_status()
@@ -87,9 +89,10 @@ def process_request(data, daily_data_rep, weekly_data_rep, daily_vaccine_data_re
                     reportManager.report_users_images(from_id, 'Ultimi dati giornalieri', daily_report_image_buf)
 
                 if txt == '/andamentovaccinazioni':
-                    daily_report_figure_vaccine = botTools.render_bar_chart_vaccini(daily_vaccine_data_rep)
-                    daily_report_image_vaccine_buf = botTools.buf_image(daily_report_figure_vaccine)
-                    reportManager.report_users_images(from_id, 'Andamento vaccinazioni', daily_report_image_vaccine_buf)
+                    daily_report_figure_stats_vax = botTools.render_image_stats(daily_data_stats,
+                                                                                daily_data_vaccininazioni)
+                    daily_report_image_stats_vax_buf = botTools.buf_image(daily_report_figure_stats_vax)
+                    reportManager.report_users_images(from_id, 'Statistiche ultimo anno e vaccinazioni', daily_report_image_stats_vax_buf)
 
                 if txt == '/ultimoreportsettimanale':
                     weekly_report_figure = botTools.render_image(weekly_data_rep)
@@ -105,7 +108,8 @@ def process_request(data, daily_data_rep, weekly_data_rep, daily_vaccine_data_re
                     continue
 
 
-def process_subscription_request(daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep, daily_top_region_pos):
+def process_subscription_request(daily_data_rep, weekly_data_rep, daily_data_stats, daily_data_vaccininazioni
+                                 , weekly_anag_vaccini_rep, daily_top_region_pos):
     offset = dbManager.get_last_offset(db_connection)
     URL_Updates = 'https://api.telegram.org/bot' + bot_token + '/getUpdates?offset=' + str(offset)
 
@@ -113,7 +117,7 @@ def process_subscription_request(daily_data_rep, weekly_data_rep, daily_vaccine_
 
     if prev_status == 1:
         data_bak = dbManager.get_cached_request(db_connection)
-        process_request(data_bak, daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep, daily_top_region_pos)
+        process_request(data_bak, daily_data_rep, weekly_data_rep, daily_data_stats, daily_data_vaccininazioni, weekly_anag_vaccini_rep, daily_top_region_pos)
 
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
@@ -125,6 +129,6 @@ def process_subscription_request(daily_data_rep, weekly_data_rep, daily_vaccine_
         update_request = requests.get(url=URL_Updates)
         data_curr = update_request.json()
         cache_update_request(data)
-        process_request(data_curr, daily_data_rep, weekly_data_rep, daily_vaccine_data_rep, weekly_anag_vaccini_rep, daily_top_region_pos)
+        process_request(data_curr, daily_data_rep, weekly_data_rep, daily_data_stats, daily_data_vaccininazioni, weekly_anag_vaccini_rep, daily_top_region_pos)
 
         db_connection.close

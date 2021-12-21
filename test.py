@@ -1,3 +1,5 @@
+import math
+
 import requests
 import dbManager
 import csv
@@ -7,10 +9,12 @@ import reportManager
 import dataManager
 import io
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import matplotlib.dates as mdates
 from matplotlib import ticker
 import numpy as np
 from PIL import Image
+import glob
 import base64
 
 regioni = ['abruzzo','basilicata','calabria','campania','emiliaromagna','friulivg',
@@ -354,11 +358,11 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 
 # for el in i:
 #     if 'andamento' in el:
-#         if db_connection[el].find_one({'date': 20210930}) is not None:
-#             print(db_connection[el].find_one({'date': 20210930}))
-#             db_connection[el].delete_one({'date': 20210930})
+#         if db_connection[el].find_one({'date': 20211112}) is not None:
+#             print(db_connection[el].find_one({'date': 20211112}))
+#             db_connection[el].delete_one({'date': 20211112})
 #             print('eliminato')
-#             print(db_connection[el].find_one({'date': 20210930}))
+#             print(db_connection[el].find_one({'date': 20211112}))
 ####################################################################
 
 #dataManager.collect_data()
@@ -371,19 +375,154 @@ def format_text_top_5_reg_nuovi_pos(data_dictionary):
 
 #print(d)
 
-# d = reportManager.count_vaccinati()
-#
-# print(d)
+# stats = reportManager.count_stats()
+# vax = reportManager.count_vaccinazioni()
 
-#
-d = dataManager.collect_anag_vaccine_data()
 
-print(d)
+def render_image_stats(statistiche, vaccinazioni):
 
-#
-fig = botTools.render_bar_chart_anag_vaccini(d)
-#
-buf = botTools.buf_image(fig)
-img = Image.open(buf)
-img.show()
+    fig= plt.figure(figsize = (9, 8))#, axs = plt.subplots(3)
 
+    ##### Grafico covid / vaccinazioni ##########
+
+    formatter = mdates.DateFormatter("%Y/%m")
+    locator = mdates.MonthLocator()
+
+    # # ##### Positivi ##########
+
+    color_pos = 'tab:orange'
+    axs_0 = plt.subplot(411)
+    #axs_0 = fig.add_subplot(gs[0, :])
+    axs_0.plot(list(statistiche[0].keys()), list(statistiche[0].values()), color= color_pos, label='nuovi positivi')
+    # plt.setp(axs[1].get_xticklabels(), visible=False)
+    axs_0.xaxis.set_major_formatter(formatter)
+    axs_0.xaxis.set_major_locator(locator)
+    axs_0.grid(color='b', ls='-.', lw=0.25)
+    axs_0.tick_params(axis='x', rotation=45)
+    plt.subplots_adjust(hspace=.001)
+
+    # # ##### Perc. Positivi ########
+    # color_perc_pos = 'tab:blue'
+    # axs[1].plot(list(statistiche[1].keys()), list(statistiche[1].values()), color=color_perc_pos, label='nuovi positivi')
+
+    # # ##### Terap. Intensiva ###########
+
+    color_terap_ints = 'tab:red'
+
+    axs_1 = plt.subplot(412)#, sharex=axs_0)
+    #axs_1 = fig.add_subplot(gs[1, :])
+
+    axs_1.plot(list(statistiche[2].keys()), list(statistiche[2].values()), color=color_terap_ints, label='nuovi positivi')
+    axs_1.grid(color='b', ls='-.', lw=0.25)
+    axs_1.xaxis.set_major_formatter(formatter)
+    axs_1.xaxis.set_major_locator(locator)
+    axs_1.tick_params(axis='x', rotation=45)
+    plt.subplots_adjust(hspace=.001)
+
+    # # ##### Deceduti ##########
+
+    color_dec = 'black'
+
+    axs_2 = plt.subplot(413)
+
+    axs_2.plot(list(statistiche[3].keys()), list(statistiche[3].values()), color=color_dec, label='deceduti')
+    axs_2.grid(color='b', ls='-.', lw=0.25)
+    axs_2.xaxis.set_major_formatter(formatter)
+    axs_2.xaxis.set_major_locator(locator)
+    axs_2.tick_params(axis='x', rotation=45)
+    plt.subplots_adjust(hspace=.001)
+
+    # # ##### Vaccinati #########
+    color_vax_2 = 'yellowgreen'
+    color_vax_3 = 'tab:green'
+    color_platee = 'black'
+
+    axs_3 = plt.subplot(414)
+    #axs_2 = fig.add_subplot(gs[2, :])
+
+    age_range = [k for k in vaccinazioni.keys()]
+
+    seconde_dosi = []
+    terze_dosi = []
+    platee = []
+
+    for ar in age_range:
+        delta_vax = int(vaccinazioni[ar]['seconda']) - int(vaccinazioni[ar]['terza'])
+        delta_platee = int(statistiche[5][ar]) - delta_vax - int(vaccinazioni[ar]['terza'])
+        seconde_dosi.append(delta_vax)
+        terze_dosi.append(int(vaccinazioni[ar]['terza']))
+        platee.append(int(delta_platee))
+
+    axs_3.barh(age_range, seconde_dosi, color=color_vax_2,
+               label='Seconde dosi', edgecolor=color_vax_2)
+    axs_3.barh(age_range, terze_dosi,left=seconde_dosi, color=color_vax_3,
+               label='Terze dosi', edgecolor=color_vax_3)
+    axs_3.barh(age_range, platee,left=np.array(seconde_dosi)+np.array(terze_dosi), color='white',
+               label='Non vaccinati', edgecolor=color_platee)
+    axs_3.legend(loc='lower left')
+
+    sci_formatter = ticker.ScalarFormatter(useMathText=True)
+    sci_formatter.set_scientific(True)
+    sci_formatter.set_powerlimits((-1, 1))
+    axs_3.xaxis.set_major_formatter(sci_formatter)
+    axs_3.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: '{:,.2f}'.format(x/1000000) + 'M'))
+
+
+    ####################### ALL GENERAL #########################################
+
+    ### Today Nuovi positivi value
+    axs_0.annotate('Oggi: {:0.0f}'.format(list(statistiche[0].values())[len(list(statistiche[0].values())) - 1])
+                 , xy=(list(statistiche[0].keys())[len(list(statistiche[0].keys())) - 1],
+                       list(statistiche[0].values())[len(list(statistiche[0].values())) - 1]), xytext=(-22, 10),
+                 textcoords="offset points", ha='center',
+                 va='bottom', fontsize=11, fontweight='bold')
+
+    ### Today terap. intensiva value
+
+    axs_1.annotate('Oggi: {:0.0f}'.format(list(statistiche[2].values())[len(list(statistiche[2].values())) - 1])
+                    , xy=(list(statistiche[2].keys())[len(list(statistiche[2].keys())) - 1],
+                          list(statistiche[2].values())[len(list(statistiche[2].values())) - 1]), xytext=(-22, 10),
+                    textcoords="offset points", ha='center',
+                    va='bottom', fontsize=11, fontweight='bold')
+
+    ### Today death. intensiva value
+
+    axs_2.annotate('Oggi: {:0.0f}'.format(list(statistiche[3].values())[len(list(statistiche[3].values())) - 1])
+                   , xy=(list(statistiche[3].keys())[len(list(statistiche[3].keys())) - 1],
+                         list(statistiche[3].values())[len(list(statistiche[3].values())) - 1]), xytext=(-22, 10),
+                   textcoords="offset points", ha='center',
+                   va='bottom', fontsize=11, fontweight='bold')
+
+    # axs_3.annotate('Oggi: {:0.0f}'.format(statistiche[4]['somministrati'])
+    #                , xy=(axs, ), xytext=(0, 0),
+    #                textcoords="offset points", ha='center',
+    #                va='bottom', fontsize=11, fontweight='bold')
+
+    axs_3.set_title('Dose somministrate oggi:'+ str(statistiche[4]['somministrati']))
+
+    axs_0.set_ylabel('Nuovi positivi')
+
+    axs_1.set_ylabel('Terap. Intensiva')
+
+    axs_2.set_ylabel('Deceduti')
+
+    axs_3.set_ylabel('Vaccinati')
+
+    fig.tight_layout()
+    buf = io.BytesIO() #commentare alla fine del test locale
+    fig.savefig(buf)  #commentare alla fine del test locale
+    buf.seek(0) #commentare alla fine del test locale
+    img = Image.open(buf, mode='r') #commentare alla fine del test locale
+    #return fig #COMMENTARE PER FARE IL TEST LOCALE
+    img.show() #commentare alla fine del test locale
+
+#render_image_stats(stats, vax)
+
+users = dbManager.get_all_users(db_connection)
+users2 = [{'id': 551420370},{'id': 3298473987}]
+
+for u in users:
+    print(u)
+
+for u in users2:
+    print(u)
