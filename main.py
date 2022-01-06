@@ -40,7 +40,7 @@ while True:
         time.sleep(60) # COOL DOWN PER LE CONNESSIONI AL DB
 
     hh, mm, ss = botTools.get_time()
-    if hh == 18 and mm == 10 and (ss > 10 and ss < 55):
+    if hh == 20 and mm == 16 and (ss > 10 and ss < 55):
         print("Sono le " + str(hh) + ":" + str(mm) + " .Controllo, aggiorno i report e invio il messaggio brodcast")
         # dati per report andamento covid
         daily_data_rep = reportManager.daily_national_data_report() # aggiorno il report dati giornaliero

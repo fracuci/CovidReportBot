@@ -83,23 +83,23 @@ def process_request(data, daily_data_rep, weekly_data_rep, daily_data_stats, dai
                         except requests.exceptions.HTTPError as e:
                             dbManager.update_request_issue_state(db_connection, 1)
                             return 'Error:  '+str(e)
-                if txt == '/ultimoreportgiornaliero':
+                if txt == '/dailyrep':
                     daily_report_figure = botTools.render_table_img(daily_data_rep)
                     daily_report_image_buf = botTools.buf_image(daily_report_figure)
                     reportManager.report_users_images(from_id, 'Ultimi dati giornalieri', daily_report_image_buf)
 
-                if txt == '/andamentovaccinazioni':
+                if txt == '/weeklyrep':
                     daily_report_figure_stats_vax = botTools.render_image_stats(daily_data_stats,
                                                                                 daily_data_vaccininazioni)
                     daily_report_image_stats_vax_buf = botTools.buf_image(daily_report_figure_stats_vax)
                     reportManager.report_users_images(from_id, 'Statistiche ultimo anno e vaccinazioni', daily_report_image_stats_vax_buf)
 
-                if txt == '/ultimoreportsettimanale':
+                if txt == '/dailystats':
                     weekly_report_figure = botTools.render_image(weekly_data_rep)
                     weekly_report_image_buf = botTools.buf_image(weekly_report_figure)
                     reportManager.report_users_images(from_id, 'Ultimi dati settimanali a 21 giorni ', weekly_report_image_buf)
 
-                if txt == '/anagraficavaccinazionisett':
+                if txt == '/weeklyvax':
                     weekly_report_figure_vaccine = botTools.render_bar_chart_anag_vaccini(weekly_anag_vaccini_rep)
                     weekly_report_figure_vaccine_buf = botTools.buf_image(weekly_report_figure_vaccine)
                     reportManager.report_users_images(from_id, 'Anagrafica vaccinazioni settimanale', weekly_report_figure_vaccine_buf)

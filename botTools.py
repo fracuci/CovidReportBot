@@ -382,7 +382,7 @@ def render_bar_chart_anag_vaccini(data_dictionary):
     prime_dosi = []
     seconde_dosi = []
     preg_infez = []
-    dosi_aggiuntive = []
+    #dosi_aggiuntive = []
     dosi_booster = []
     totali = []
 
@@ -390,7 +390,7 @@ def render_bar_chart_anag_vaccini(data_dictionary):
         prime_dosi.append(int(data_dictionary[ar]['prima_dose']))
         seconde_dosi.append(int(data_dictionary[ar]['seconda_dose']))
         preg_infez.append(int(data_dictionary[ar]['preg_infez']))
-        dosi_aggiuntive.append(int(data_dictionary[ar]['dose_aggiuntiva']))
+        #dosi_aggiuntive.append(int(data_dictionary[ar]['dose_aggiuntiva']))
         dosi_booster.append(int(data_dictionary[ar]['dose_booster']))
         totali.append(int(data_dictionary[ar]['totale']))
 
@@ -398,12 +398,12 @@ def render_bar_chart_anag_vaccini(data_dictionary):
     fig, ax = plt.subplots()
 
     p_d = ax.bar(age_range, prime_dosi, width, label='Prime dosi', color='mediumspringgreen')
-    s_d = ax.bar(age_range, seconde_dosi, width, bottom=prime_dosi,  label='Seconde dosi', color='springgreen')
-    d_a = ax.bar(age_range, dosi_aggiuntive, width, bottom=np.array(seconde_dosi) + np.array(prime_dosi), label='Dosi aggiuntive',
-                 color='mediumseagreen')
-    d_b = ax.bar(age_range, dosi_booster, width, bottom=np.array(dosi_aggiuntive) + np.array(seconde_dosi)
-                                                        + np.array(prime_dosi), label='Dosi booster', color='seagreen')
-    p_i = ax.bar(age_range, preg_infez, width, bottom=np.array(dosi_booster) + np.array(dosi_aggiuntive) + np.array(seconde_dosi)
+    s_d = ax.bar(age_range, seconde_dosi, width, bottom=prime_dosi,  label='Seconde dosi', color='yellowgreen')
+#    d_a = ax.bar(age_range, dosi_aggiuntive, width, bottom=np.array(seconde_dosi) + np.array(prime_dosi), label='Dosi aggiuntive',
+#                 color='mediumseagreen')
+    d_b = ax.bar(age_range, dosi_booster, width, bottom= np.array(seconde_dosi)
+                                                        + np.array(prime_dosi), label='Dosi booster', color='tab:green')
+    p_i = ax.bar(age_range, preg_infez, width, bottom=np.array(dosi_booster) + np.array(seconde_dosi)
                                                         + np.array(prime_dosi), label='Pregr. Infezione',
                                                         color='darkorange')
 
@@ -422,7 +422,7 @@ def render_bar_chart_anag_vaccini(data_dictionary):
     for i in range(0, len(p_d)):
         height_el_p_d = p_d[i].get_height()
         height_el_s_d = s_d[i].get_height()
-        height_el_d_a = d_a[i].get_height()
+        #height_el_d_a = d_a[i].get_height()
         height_el_d_b = d_b[i].get_height()
         height_el_p_i = p_i[i].get_height()
 
@@ -446,12 +446,12 @@ def render_bar_chart_anag_vaccini(data_dictionary):
 
         if totali[i] > 1000000:
             ax.annotate('{:.1f}M'.format(totali[i] / 1000000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
-                    height_el_s_d + height_el_p_d + height_el_d_a + height_el_d_b + height_el_p_i + 100000),
+                    height_el_s_d + height_el_p_d  + height_el_d_b + height_el_p_i + 100000),
                         xytext=(0, 0), textcoords="offset points", ha='center',
                     va='bottom', fontsize=8, fontweight='bold')
         else:
             ax.annotate('{:.1f}K'.format(totali[i] / 1000), xy=(s_d[i].get_x() + s_d[i].get_width() / 2,
-                    height_el_s_d + height_el_p_d + height_el_d_a + height_el_d_b + height_el_p_i + 100000), xytext=(0, 0),
+                    height_el_s_d + height_el_p_d + height_el_d_b + height_el_p_i + 100000), xytext=(0, 0),
                         textcoords="offset points", ha='center',
                         va='bottom', fontsize=8, fontweight='bold')
 

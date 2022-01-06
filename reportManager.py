@@ -260,11 +260,21 @@ def count_vaccinazioni():
 
 def count_stats():
 
-    today = datetime.date.today() - datetime.timedelta(1)
-    yesterday = today - datetime.timedelta(1)
+    now = datetime.datetime.now()
+    #now_test = datetime.datetime.strptime('2021-12-23 19:10:26.938113', '%Y-%m-%d %H:%M:%S.%f')
+    today18pm = now.replace(hour=18, minute=0, second=0, microsecond=0)
+
+    if now < today18pm:
+        today = datetime.date.today() - datetime.timedelta(1)
+        yesterday = today - datetime.timedelta(1)
+    else:
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(1)
+
     yesterday_date = int(yesterday.strftime('%Y%m%d'))
     last_year = today - datetime.timedelta(365)
-    last_year_date = int(last_year.strftime('%d%m%Y'))
+    #last_year_date = int(last_year.strftime('%Y%m%d'))
+    last_year_date = 20200901
 
     rs = list(db_connection['andamento_nazionale'].find({'date': { '$gt': last_year_date}}))
     rs_vaccini = list(db_connection['vaccini'].find({'date': { '$gte': yesterday_date}}))
@@ -343,7 +353,6 @@ def enqueue_process_week(user,txt, figure, figure_vaccine):
 
     weekly_report_image_anag_vaccini_buf = botTools.buf_image(figure_vaccine)
     report_users_images(str(user), 'Anagrafica vaccinazioni settimanale\n' +
-    'Dose aggiuntiva: dopo 28gg dal completamento ciclo vaccinale\n'+
     'Dose booster: dose di richiamo dopo completamento ciclo vaccinale (terza dose)\n'+
     'Pregressa infezione: diritto a GP per 6 mesi dalla guarigione da Covid 19\n' +
     'fonte: ARS Regione Toscana https://www.ars.toscana.it'
